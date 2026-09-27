@@ -1,0 +1,65 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>NIMCET Rank 1 Tracker</title>
+  <meta name="description" content="2 hours/day NIMCET tracker: syllabus depth & weightage, daily plan, spaced revision, tough topics, mistake log, mock analysis, pomodoro and Claude teaching prompts.">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+  <header class="top">
+    <div class="brand">
+      <span class="logo">N1</span>
+      <div>
+        <h1>NIMCET Rank 1 Tracker</h1>
+        <p class="sub" id="headerSub">2 hrs/day · plan, padho, track karo</p>
+      </div>
+    </div>
+    <button class="btn ghost" id="themeBtn" title="Toggle theme">◐</button>
+  </header>
+
+  <nav class="tabs" id="tabs">
+    <button data-tab="today" class="active">Today</button>
+    <button data-tab="plan">Plan</button>
+    <button data-tab="syllabus">Syllabus</button>
+    <button data-tab="revision">Revision</button>
+    <button data-tab="mistakes">Tough &amp; Mistakes</button>
+    <button data-tab="mocks">Mocks</button>
+    <button data-tab="claude">Claude</button>
+    <button data-tab="speed">Speed Kit</button>
+    <button data-tab="guide">Guide</button>
+    <button data-tab="settings">Settings</button>
+  </nav>
+
+  <main id="view"></main>
+
+  <aside class="pomo" id="pomo">
+    <div class="pomo-head">
+      <select id="pomoMode" aria-label="Timer mode">
+        <option value="focus">Focus 25</option>
+        <option value="revision">Revision 25</option>
+        <option value="break">Break 5</option>
+        <option value="mock">Mock 120</option>
+      </select>
+      <span class="pomo-count" id="pomoCount"></span>
+      <button class="btn ghost small" id="pomoToggle" aria-label="Collapse timer">▾</button>
+    </div>
+    <div class="pomo-body">
+      <div class="pomo-time" id="pomoTime">25:00</div>
+      <div class="pomo-cue" id="pomoCue"></div>
+      <div class="pomo-btns">
+        <button class="btn primary" id="pomoStart">Start</button>
+        <button class="btn" id="pomoReset">Reset</button>
+      </div>
+    </div>
+  </aside>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="js/data.js"></script>
+  <script src="js/engine.js"></script>
+  <script src="js/prompts.js"></script>
+  <script src="js/app.js"></script>
+</body>
+</html>
