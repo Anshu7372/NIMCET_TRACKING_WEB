@@ -42,8 +42,92 @@ function loadState() {
 }
 
 let state = loadState();
+
+// Old day snapshots are only needed for the streak; keep the saved state small.
+function pruneDays() {
+  const cutoff = addDays(todayStr(), -21);
+  for (const d of Object.keys(state.days)) if (d < cutoff) delete state.days[d];
+}
+
 function save() {
-  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { toast("⚠ Save failed — browser storage blocked. Export backup!"); }
+  state.savedAt = Date.now();
+  pruneDays();
+  try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { if (!cloud.ref) toast("⚠ Save failed — browser storage blocked. Export backup!"); }
+  queueCloud();
+}
+
+/* ---------------- account sync (claude.ai artifact only) ---------------- */
+// On claude.ai the page gets a private per-user document; elsewhere it stays browser-only.
+const cloud = { ref: null, status: "local", timer: 0, writing: false, again: false };
+
+function setSync(status) {
+  cloud.status = status;
+  const el = document.getElementById("syncState");
+  if (!el) return;
+  const txt = { local: "Browser only", synced: "☁ Saved to account", saving: "☁ Saving…", error: "⚠ Sync failed — export backup" };
+  el.textContent = txt[status] || "";
+  el.dataset.s = status;
+}
+
+function queueCloud() {
+  if (!cloud.ref) return;
+  clearTimeout(cloud.timer);
+  setSync("saving");
+  cloud.timer = setTimeout(writeCloud, 1500);
+}
+
+async function writeCloud() {
+  if (cloud.writing) { cloud.again = true; return; }
+  cloud.writing = true;
+  try {
+    const json = JSON.stringify(state);
+    if (json.length > 240000) toast("⚠ Data bahut bada ho gaya — resolved mistakes delete karo ya export karo");
+    await cloud.ref.set({ json, savedAt: state.savedAt || Date.now() });
+    setSync("synced");
+  } catch (e) {
+    if (e && e.code === "unavailable") { setTimeout(writeCloud, 2000 + Math.random() * 2000); }
+    else setSync("error");
+  } finally {
+    cloud.writing = false;
+    if (cloud.again) { cloud.again = false; writeCloud(); }
+  }
+}
+
+async function initCloud() {
+  for (let i = 0; i < 6 && !(window.claude && window.claude.use); i++) await new Promise((r) => setTimeout(r, 500));
+  if (!(window.claude && window.claude.use)) return;
+  try {
+    const [db, user] = await Promise.all([window.claude.use("db"), window.claude.use("user")]);
+    if (!db || !user) return;
+    const id = await user.id();
+    if (!id) return;
+    cloud.ref = db.doc("data/users/" + id + "/tracker");
+    const snap = await cloud.ref.get();
+    const remote = snap.exists ? JSON.parse(snap.data().json || "null") : null;
+    if (remote && (remote.savedAt || 0) > (state.savedAt || 0)) {
+      const d = defaultState();
+      state = { ...d, ...remote, settings: { ...d.settings, ...(remote.settings || {}) } };
+      try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) { /* ignore */ }
+      applyTheme(); render();
+      setSync("synced");
+    } else if (state.savedAt) {
+      queueCloud();
+    } else setSync("synced");
+  } catch (e) {
+    cloud.ref = null;
+    setSync("local");
+  }
+}
+
+/* In-page confirmation: first tap arms the button, second tap within 4 s runs it. */
+function armed(el, label) {
+  if (el.dataset.armed === "1") return true;
+  el.dataset.armed = "1";
+  const old = el.textContent;
+  el.textContent = label || "Pakka? Dobara tap karo";
+  el.classList.add("bad");
+  setTimeout(() => { el.dataset.armed = ""; el.textContent = old; el.classList.remove("bad"); }, 4000);
+  return false;
 }
 
 const ui = { tab: "today", openCh: new Set(), openLeaf: null, planPage: 0, synFilter: { sub: "", q: "", tough: false, status: "" }, promptLeaf: "", mistakeFilter: "open" };
@@ -887,10 +971,15 @@ function renderSettings() {
   </div>
   <div class="card">
     <h2>Backup</h2>
-    <p class="meta">Data sirf is browser me save hota hai. Har hafte export karo (phone/laptop change karne pe import).</p>
+    <p class="meta">${cloud.ref ? "Data tumhare claude.ai account me private save hota hai (sirf tum dekh sakte ho) — phone aur laptop dono pe same link kholo." : "Data sirf is browser me save hota hai."} Fir bhi har hafte backup lo.</p>
     <div class="row">
       <button class="btn" data-act="export">⬇ Export JSON</button>
-      <label class="btn">⬆ Import JSON<input type="file" id="importFile" accept="application/json" hidden></label>
+      <button class="btn" data-act="copyBackup">📋 Copy backup text</button>
+      <label class="btn">⬆ Import JSON file<input type="file" id="importFile" accept="application/json" hidden></label>
+    </div>
+    <label class="f" style="margin-top:10px">Ya backup text yaha paste karke import karo<textarea id="importText" style="min-height:60px"></textarea></label>
+    <div class="row" style="margin-top:8px">
+      <button class="btn" data-act="importText">Import pasted text</button>
       <button class="btn bad" data-act="reset">Reset everything</button>
     </div>
   </div>`;
@@ -982,7 +1071,7 @@ document.addEventListener("click", (e) => {
     case "logManual": addLog(25); toast("+25 min logged"); render(); break;
     case "regen": {
       const day = state.days[todayStr()];
-      if (day && Object.values(day.checks).some(Boolean) && !confirm("Aaj ke kuch tasks ticked hain. Regenerate karne se ticks hat jayenge (progress rahega). Continue?")) break;
+      if (day && Object.values(day.checks).some(Boolean) && !armed(el, "Ticks hat jayenge (progress rahega) — dobara tap")) break;
       delete state.days[todayStr()]; ensureDay(todayStr()); render(); break;
     }
     case "planPage": ui.planPage = Math.max(0, ui.planPage + +el.dataset.d); render(); break;
@@ -1004,7 +1093,7 @@ document.addEventListener("click", (e) => {
       state.mistakes.push(m); ui.prefLeaf = m.leafId;
       save(); toast("Mistake saved — kal re-solve ke liye aayega"); render(); break;
     }
-    case "delMistake": if (confirm("Delete this mistake?")) { state.mistakes = state.mistakes.filter((m) => m.id !== el.dataset.id); save(); render(); } break;
+    case "delMistake": if (armed(el, "Delete?")) { state.mistakes = state.mistakes.filter((m) => m.id !== el.dataset.id); save(); render(); } break;
     case "addMock": {
       const m = { id: uid(), name: $("#mkName").value.trim() || `Mock ${state.mocks.length + 1}`, date: $("#mkDate").value || todayStr(), kind: $("#mkKind").value, sections: {}, skipped: +$("#mkSkipped").value || 0, notes: $("#mkNotes").value.trim() };
       let bad = false;
@@ -1017,7 +1106,7 @@ document.addEventListener("click", (e) => {
       state.mocks.push(m); state.mocks.sort((x, y) => (x.date < y.date ? -1 : 1));
       save(); toast(`Saved: ${mockScore(m).total}/1000`); render(); break;
     }
-    case "delMock": if (confirm("Delete this mock?")) { state.mocks = state.mocks.filter((m) => m.id !== el.dataset.id); save(); render(); } break;
+    case "delMock": if (armed(el, "Delete?")) { state.mocks = state.mocks.filter((m) => m.id !== el.dataset.id); save(); render(); } break;
     case "speedLv": state.speedKit[el.dataset.id] = +el.dataset.v; save(); render(); break;
     case "saveSettings": {
       const s = state.settings;
@@ -1029,17 +1118,39 @@ document.addEventListener("click", (e) => {
       if (day && !Object.values(day.checks).some(Boolean)) delete state.days[todayStr()];
       save(); toast("Saved ✓ — plan recalculated"); render(); break;
     }
-    case "export": {
-      const blob = new Blob([JSON.stringify(state, null, 1)], { type: "application/json" });
-      const a2 = document.createElement("a");
-      a2.href = URL.createObjectURL(blob); a2.download = `nimcet-tracker-${todayStr()}.json`; a2.click();
+    case "export": exportBackup(); break;
+    case "copyBackup": copy(JSON.stringify(state)); break;
+    case "importText": {
+      try { importState($("#importText").value); } catch (err) { toast("Invalid backup text"); }
       break;
     }
     case "reset":
-      if (confirm("Sab data delete ho jayega. Pehle export kiya? Continue?")) { state = defaultState(); save(); render(); }
+      if (armed(el, "Sab data delete hoga — dobara tap karo")) { state = defaultState(); save(); render(); }
       break;
   }
 });
+
+async function exportBackup() {
+  const data = JSON.stringify(state, null, 1);
+  const filename = `nimcet-tracker-${todayStr()}.json`;
+  if (window.claude && window.claude.use) {
+    const dl = await window.claude.use("downloads");
+    if (dl) {
+      try { await dl.save({ filename, data }); toast("Backup saved ✓"); } catch (e) { toast("Save cancel hua — 'Copy backup text' use karo"); }
+      return;
+    }
+  }
+  const a2 = document.createElement("a");
+  a2.href = URL.createObjectURL(new Blob([data], { type: "application/json" }));
+  a2.download = filename; a2.click();
+}
+
+function importState(txt) {
+  const s = JSON.parse(txt);
+  if (!s.progress || !s.settings) throw new Error("bad file");
+  state = { ...defaultState(), ...s, settings: { ...defaultState().settings, ...s.settings } };
+  save(); toast("Imported ✓"); render();
+}
 
 document.addEventListener("change", (e) => {
   const el = e.target;
@@ -1048,12 +1159,7 @@ document.addEventListener("change", (e) => {
     const f = el.files[0];
     if (!f) return;
     f.text().then((txt) => {
-      try {
-        const s = JSON.parse(txt);
-        if (!s.progress || !s.settings) throw new Error("bad file");
-        state = { ...defaultState(), ...s, settings: { ...defaultState().settings, ...s.settings } };
-        save(); toast("Imported ✓"); render();
-      } catch (err) { toast("Invalid backup file"); }
+      try { importState(txt); } catch (err) { toast("Invalid backup file"); }
     });
     return;
   }
@@ -1198,6 +1304,8 @@ $("#pomoToggle").addEventListener("click", () => { $("#pomo").classList.toggle("
 /* ---------------- boot ---------------- */
 applyTheme();
 render();
+setSync("local");
+initCloud();
 setInterval(pomoTick, 500);
 pomoTick();
 // Day rollover while the tab stays open.

@@ -34,6 +34,10 @@ At 2 hrs/day the full plan runs about 16 months. NIMCET 2027 is set as a **dry r
 
 > Weightage figures are estimates from PYQ trends, not official numbers. Check the syllabus and exam date against the official notification (nimcet.admissions.nic.in) every year.
 
+## claude.ai artifact version
+
+`node scripts/build-artifact.mjs` bundles everything into `dist/nimcet-tracker.html`, a single self-contained page. Published as a claude.ai artifact, it saves progress to a private per-user document in your account (`db` + `user` capabilities), so the same link works on phone and laptop. Outside claude.ai it falls back to browser storage.
+
 ## Hosting on GitHub Pages
 
 Go to Settings → Pages → Deploy from branch, and pick this branch with `/ (root)`.
