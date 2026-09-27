@@ -1,5 +1,7 @@
 # NIMCET Rank 1 Tracker
 
+**Live:** https://anshu7372.github.io/NIMCET_TRACKING_WEB/
+
 A study tracker for NIMCET built around **2 hours a day**. You only study. The tracker does the planning.
 
 It is a static web app with no build step and no backend. Open `index.html`, or host it on GitHub Pages. Data is stored in your browser (localStorage). Use **Settings → Export** weekly as a backup.
