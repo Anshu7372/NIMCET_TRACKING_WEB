@@ -26,6 +26,8 @@ function defaultState() {
     log: {},
     pomos: {},
     speedKit: {},
+    quiz: {},
+    bm: {},
   };
 }
 
@@ -357,7 +359,7 @@ function itemHtml(date, bi, ii, item, checked) {
     return `<div class="task ${checked ? "done" : ""}">
       <input type="checkbox" disabled ${checked ? "checked" : ""}>
       <div class="tx">
-        <div><b>Re-solve:</b> ${esc(m.ref || "question")} <span class="badge">${esc(m.type)}</span></div>
+        <div><b>Re-solve:</b> ${esc(m.ref || "question")} <span class="badge">${esc(m.type)}</span>${m.qid ? ` <button class="btn small primary" data-pact="retry" data-q="${esc(m.qid)}">↻ Practice me kholo</button>` : ""}</div>
         <div class="meta">${l ? esc(l.name) : "General"} · galti: ${esc(m.note)}</div>
         ${checked ? `<div class="meta">Result: <b>${esc(checked)}</b></div>` : `<div class="rate">
           <button class="btn small good" data-act="mres" data-r="solved" data-date="${date}" data-b="${bi}" data-i="${ii}">Solved ✓ (bina dekhe)</button>
@@ -664,7 +666,7 @@ function renderRevision() {
           <div class="meta">${esc(l.ch.name)} · stage ${p.rev.stage} · due ${fmtDate(p.rev.due)} · conf ${p.conf || "—"}/5</div>
           <div class="rate">${["again", "hard", "good", "easy"].map((r) => `<button class="btn small ${{ again: "bad", hard: "warn", good: "good", easy: "primary" }[r]}" data-act="rateDirect" data-leaf="${l.id}" data-r="${r}">${r[0].toUpperCase() + r.slice(1)}</button>`).join("")}</div></div></div>`;
       }).join("") : `<p class="meta">Kuch due nahi ✓</p>`}
-      ${dueM.map((m) => { const l = LEAF[m.leafId]; return `<div class="task"><div class="tx"><b>Re-solve:</b> ${esc(m.ref || "question")} <span class="badge">${esc(m.type)}</span><div class="meta">${l ? esc(l.name) : "General"} · ${esc(m.note)}</div>
+      ${dueM.map((m) => { const l = LEAF[m.leafId]; return `<div class="task"><div class="tx"><b>Re-solve:</b> ${esc(m.ref || "question")} <span class="badge">${esc(m.type)}</span>${m.qid ? ` <button class="btn small primary" data-pact="retry" data-q="${esc(m.qid)}">↻ Dobara solve</button>` : ""}<div class="meta">${l ? esc(l.name) : "General"} · ${esc(m.note)}</div>
         <div class="rate"><button class="btn small good" data-act="mresDirect" data-id="${m.id}" data-r="solved">Solved ✓</button><button class="btn small bad" data-act="mresDirect" data-id="${m.id}" data-r="failed">Failed ✗</button></div></div></div>`; }).join("")}
     </div>
     <div>
@@ -752,7 +754,7 @@ function renderMistakes() {
     <div class="row between"><h2>Mistake log (${list.length})</h2>
       <select data-act="mkFilter">${[["open", "Open"], ["resolved", "Resolved"], ["all", "All"]].map(([v, n]) => `<option value="${v}" ${f === v ? "selected" : ""}>${n}</option>`).join("")}</select></div>
     <div class="scroll-x"><table><tr><th>Date</th><th>Subtopic</th><th>Type</th><th>Galti → Sahi</th><th>Next</th><th></th></tr>
-      ${list.map((m) => { const l = LEAF[m.leafId]; return `<tr><td>${fmtDate(m.date, { day: "numeric", month: "short" })}</td><td>${l ? esc(l.name) : "General"}<div class="meta">${esc(m.source)} ${esc(m.ref || "")}</div></td><td>${esc(m.type)}</td><td>${esc(m.note)}${m.fix ? `<div class="meta">→ ${esc(m.fix)}</div>` : ""}</td><td>${m.resolved ? "✓" : fmtDate(m.due, { day: "numeric", month: "short" }) + ` (${m.solved || 0}/4)`}</td><td><button class="btn small ghost" data-act="delMistake" data-id="${m.id}">✕</button></td></tr>`; }).join("")}
+      ${list.map((m) => { const l = LEAF[m.leafId]; return `<tr><td>${fmtDate(m.date, { day: "numeric", month: "short" })}</td><td>${l ? esc(l.name) : "General"}<div class="meta">${esc(m.source)} ${esc(m.ref || "")}</div></td><td>${esc(m.type)}</td><td>${esc(m.note)}${m.fix ? `<div class="meta">→ ${esc(m.fix)}</div>` : ""}</td><td>${m.resolved ? "✓" : fmtDate(m.due, { day: "numeric", month: "short" }) + ` (${m.solved || 0}/4)`}</td><td>${m.qid ? `<button class="btn small" data-pact="retry" data-q="${esc(m.qid)}">↻ Dobara solve</button>` : ""}<button class="btn small ghost" data-act="delMistake" data-id="${m.id}">✕</button></td></tr>`; }).join("")}
     </table></div>
   </div>`;
 }

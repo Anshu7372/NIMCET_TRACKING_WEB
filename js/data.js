@@ -1087,7 +1087,7 @@ const REVISION_POMODORO = [
 // Mistake types for mock / practice analysis.
 const MISTAKE_TYPES = [
   "Concept gap", "Formula bhool gaya", "Calculation error", "Silly / misread",
-  "Time pressure", "Wrong guess", "Skipped but could solve", "Approach nahi soojha",
+  "Time pressure", "Wrong guess", "Skipped but could solve", "Approach nahi soojha", "Topic abhi padha nahi",
 ];
 
 // Mock phase settings.
