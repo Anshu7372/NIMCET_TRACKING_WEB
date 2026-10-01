@@ -2,7 +2,7 @@
 
 **Live:** https://anshu7372.github.io/NIMCET_TRACKING_WEB/
 
-A study tracker for NIMCET built around **2 hours a day**. You only study. The tracker does the planning.
+A study tracker for **NIMCET 2027** built around **4 hours a day** (changeable in Settings). You only study. The tracker does the planning.
 
 It is a static web app with no build step and no backend. Open `index.html`, or host it on GitHub Pages. Data is stored in your browser (localStorage). Use **Settings → Export** weekly as a backup.
 
@@ -21,7 +21,7 @@ It is a static web app with no build step and no backend. Open `index.html`, or 
 | **Claude** | A master teaching prompt, a per-subtopic prompt (depth, NEED/SKIP, your mistakes, your learning profile), a hint-only prompt, and mistake/mock/weekly-review prompts. |
 | **Speed Kit** | Things to master first (squares, trig values, logs, the hex table…), the problem-solving protocol per depth level, and speed tricks by chapter. |
 
-## Plan structure (2 hrs/day)
+## Plan structure (4 hrs/day, target NIMCET 2027)
 
 - **Mon–Sat:**
   - P1: speed drill + spaced revision
@@ -36,7 +36,7 @@ Resources used: NCERT lectures + exercises, JEE Main PYQs, NIMCET PYQs and a tes
 - **Phase 3:** 30 full mocks, each as a mock day, then analysis + fix, then a revision day.
 - **Phase 4:** maintenance until the exam. The last 14 days are final revision.
 
-At 2 hrs/day the full plan runs about 16 months. NIMCET 2027 is set as a **dry run** and NIMCET 2028 as the target. Both dates can be changed in Settings.
+At 4 hrs/day (110 min maths + 55 min second subject + 30 min spaced revision + speed drill/recap/breaks) the syllabus finishes around **late March 2027**, followed by 6 reserved PYQ papers, ~30 full mocks (mock + analysis + fix on one day, revision the next) and 14 days of final revision before NIMCET 2027 (~6 June 2027, update the date when the notification is out).
 
 > Weightage figures are estimates from PYQ trends, not official numbers. Check the syllabus and exam date against the official notification (nimcet.admissions.nic.in) every year.
 

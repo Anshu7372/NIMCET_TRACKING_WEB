@@ -8,10 +8,10 @@ function defaultState() {
   return {
     v: 1,
     settings: {
-      perDay: 120,
+      perDay: 240,
       restDay: 0,
-      dryRunDate: "2027-06-06",
-      examDate: "2028-06-04",
+      dryRunDate: "",
+      examDate: "2027-06-06",
       startDate: todayStr(),
       profile: DEFAULT_PROFILE,
       theme: "",
@@ -47,9 +47,13 @@ let state = loadState();
 
 // Bump when the syllabus/resources change: unticked saved day plans are rebuilt
 // so they show the current syllabus and resources.
-const DATA_V = 2;
+const DATA_V = 3;
 function migrateData() {
   if (state.dataV === DATA_V) return;
+  if ((state.dataV || 0) < 3) {
+    // Target changed to NIMCET 2027 at 4 h/day.
+    Object.assign(state.settings, { perDay: 240, examDate: "2027-06-06", dryRunDate: "" });
+  }
   for (const [d, day] of Object.entries(state.days)) {
     if (!Object.values(day.checks || {}).some(Boolean)) delete state.days[d];
   }
@@ -276,12 +280,13 @@ function toggleItem(date, bi, ii, value) {
 /* ---------------- header ---------------- */
 function renderHeader() {
   const s = state.settings;
-  const d1 = diffDays(todayStr(), s.dryRunDate);
+  const d1 = s.dryRunDate ? diffDays(todayStr(), s.dryRunDate) : 0;
   const d2 = diffDays(todayStr(), s.examDate);
   const parts = [];
   if (d1 > 0) parts.push(`Dry run (NIMCET ${s.dryRunDate.slice(0, 4)}): ${d1} din`);
   if (d2 > 0) parts.push(`Target (NIMCET ${s.examDate.slice(0, 4)}): ${d2} din`);
-  $("#headerSub").textContent = parts.join(" · ") || "2 hrs/day · plan, padho, track karo";
+  parts.push(`${+(s.perDay / 60).toFixed(1)} hrs/day`);
+  $("#headerSub").textContent = parts.join(" · ");
 }
 
 /* ---------------- TODAY ---------------- */
@@ -417,14 +422,14 @@ function renderToday() {
   <div class="grid g4">
     <div class="card stat"><span class="l">Aaj</span><span class="v">${fmtDate(date, { weekday: "short", day: "numeric", month: "short" })}</span><span class="badge phase" style="background:${ph.color}">${esc(ph.name)}</span></div>
     <div class="card stat"><span class="l">Streak 🔥</span><span class="v">${streak()} din</span><span class="l">≥ 60 min ya poora plan</span></div>
-    <div class="card stat"><span class="l">Is hafte</span><span class="v">${hrs(weekMinutes())} h</span><span class="l">target 14 h · 🍅 aaj ${pomosToday}/4</span></div>
+    <div class="card stat"><span class="l">Is hafte</span><span class="v">${hrs(weekMinutes())} h</span><span class="l">target ${Math.round((state.settings.perDay * 6) / 60)} h · 🍅 aaj ${pomosToday}/${Math.round(state.settings.perDay / 30)}</span></div>
     <div class="card stat"><span class="l">Subtopics complete</span><span class="v">${allDone}/${LEAVES.length}</span><span class="l">revision due: ${dueRevisions(state, date).length}</span></div>
   </div>
 
   <div class="grid g2" style="margin-top:14px">
     <div class="card">
       <h2>Aaj ka plan · ${esc(day.kind)}</h2>
-      <p class="meta">Pomodoro: 4 × 25 min focus + 5 min break. Timer neeche right me hai. Har task ke baad tick karo — progress, questions count aur revision schedule auto update ho jayega.</p>
+      <p class="meta">Pomodoro: ${Math.round(state.settings.perDay / 30)} × 25 min focus + 5 min break. Timer neeche right me hai. Har task ke baad tick karo — progress, questions count aur revision schedule auto update ho jayega.</p>
       ${blocks}
       <div class="row" style="margin-top:8px">
         <button class="btn" data-act="extra" data-sub="M">+25 min Maths (extra)</button>
@@ -464,7 +469,12 @@ function renderPlan() {
   const t = totals();
   const totalH = Object.values(t).reduce((x, y) => x + y.mins, 0) / 60;
   const examIdx = pr.days.findIndex((d) => d.date === s.examDate);
-  const warnLate = pr.p1End && pr.p1End > addDays(s.examDate, -120);
+  // What actually fits before the exam.
+  const beforeExam = pr.days.filter((d) => d.date < s.examDate);
+  const mocksBefore = beforeExam.filter((d) => ["Mock", "Mock + analysis", "Final: mock"].includes(d.kind)).length;
+  const papersBefore = beforeExam.filter((d) => d.kind.startsWith("PYQ paper")).length;
+  const sylDone = pr.p1End && pr.p1End < s.examDate;
+  const warnLate = !sylDone || mocksBefore < 15;
 
   // month roadmap
   const months = {};
@@ -503,7 +513,7 @@ function renderPlan() {
 
   return `
   <div class="card">
-    <h2>Full plan (2 hrs/day) — auto-adjusts to your real progress</h2>
+    <h2>Full plan (${+(s.perDay / 60).toFixed(1)} hrs/day) — auto-adjusts to your real progress</h2>
     <p class="meta">Ye plan roz tumhari actual progress se dobara calculate hota hai. Ek din miss hua to plan khud aage khisak jayega — planning tumhe nahi karni.</p>
     <div class="grid g4">
       <div class="stat"><span class="l">Total new-content time</span><span class="v">${Math.round(totalH)} h</span><span class="l">${Object.values(t).reduce((x, y) => x + y.qs, 0)} questions</span></div>
@@ -511,7 +521,11 @@ function renderPlan() {
       <div class="stat"><span class="l">PYQ papers phase</span><span class="v">${pr.p2Start ? fmtDate(pr.p2Start, { month: "short", year: "numeric" }) : "—"}</span></div>
       <div class="stat"><span class="l">Mocks phase ends</span><span class="v">${pr.p3End ? fmtDate(pr.p3End, { month: "short", year: "numeric" }) : "—"}</span></div>
     </div>
-    ${warnLate ? `<div class="warnbox" style="margin-top:10px">⚠ Target exam (${fmtDate(s.examDate)}) se pehle mocks ke liye 4 mahine nahi bach rahe. Options: roz ka time badhao (Settings), ya target exam aage karo.</div>` : `<div class="infobox" style="margin-top:10px">✓ 2 hrs/day pe syllabus + PYQ + 30 mocks target exam (${fmtDate(s.examDate)}) se pehle ho jayega. NIMCET ${s.dryRunDate.slice(0, 4)} (${fmtDate(s.dryRunDate)}) ko <b>dry run</b> ki tarah do — real exam experience milega.</div>`}
+    <div class="${warnLate ? "warnbox" : "infobox"}" style="margin-top:10px">
+      ${sylDone ? `✓ ${+(s.perDay / 60).toFixed(1)} hrs/day pe syllabus <b>${fmtDate(pr.p1End)}</b> tak poora. Exam (${fmtDate(s.examDate)}) se pehle: <b>${papersBefore} PYQ papers + ~${mocksBefore} full mocks</b> + last 14 din final revision.` : `⚠ ${+(s.perDay / 60).toFixed(1)} hrs/day pe syllabus exam (${fmtDate(s.examDate)}) se pehle poora nahi hoga (projected ${pr.p1End ? fmtDate(pr.p1End) : "—"}).`}
+      ${warnLate ? " Mocks kam pad rahe hain — roz ka time badhao (Settings) ya weekends pe extra 🍅 lagao (Today → +25 min)." : ""}
+      <span class="meta">Exam date approx hai — official notification aate hi Settings me update karo, plan apne aap adjust hoga.</span>
+    </div>
   </div>
 
   <div class="grid g2" style="margin-top:14px">
@@ -519,9 +533,9 @@ function renderPlan() {
       <h3>Daily template (${s.perDay} min)</h3>
       <table>
         <tr><th>Block</th><th>Time</th><th>Kya</th></tr>
-        <tr><td>🍅 P1</td><td>${b.speed}+${b.rev} min</td><td>Speed drill + spaced revision (due list, 1 tough, mistakes)</td></tr>
-        <tr><td>🍅 P2 + P3</td><td>${b.maths} min</td><td>Maths new: NCERT lecture → NCERT exercise → JEE Main PYQs → NIMCET PYQs</td></tr>
-        <tr><td>🍅 P4</td><td>${b.sec} min</td><td>Mon/Wed/Fri Reasoning · Tue/Thu Computer · Sat English</td></tr>
+        <tr><td>🍅 Start</td><td>${b.speed}+${b.rev} min</td><td>Speed drill + spaced revision (due list, 1 tough, mistakes)</td></tr>
+        <tr><td>🍅 Maths</td><td>${b.maths} min</td><td>Maths new: NCERT lecture → NCERT exercise → JEE Main PYQs → NIMCET PYQs</td></tr>
+        <tr><td>🍅 2nd subject</td><td>${b.sec} min</td><td>Mon/Wed/Fri Reasoning · Tue/Thu Computer · Sat English</td></tr>
         <tr><td>End</td><td>${b.recap} min</td><td>Blurting recap + tracker update</td></tr>
         <tr><td>Breaks</td><td>${b.breaks} min</td><td>5 min har pomodoro ke baad (phone nahi, paani + walk)</td></tr>
       </table>
@@ -531,10 +545,10 @@ function renderPlan() {
       <table>
         <tr><th>Day</th><th>Plan</th></tr>
         <tr><td>Mon–Sat</td><td>Study day (upar wala template)</td></tr>
-        <tr><td>Sunday</td><td>Weekly revision: hafte ke subtopics 50 · mistakes 25 · 20 mixed timed Qs 25 · formula sheet 10</td></tr>
-        <tr><td>Last Sunday</td><td>Monthly test: 30 Qs timed + analysis</td></tr>
-        <tr><td>Phase 2</td><td>Paper day ↔ analysis day (${MOCK_PLAN.reservedPyqYears.join(", ")} papers reserved — inhe topic-wise practice me mat use karna)</td></tr>
-        <tr><td>Phase 3/4</td><td>Mock → analysis + fix → revision day (3-day cycle)</td></tr>
+        <tr><td>Sunday</td><td>Weekly revision: hafte ke subtopics ${Math.round(50 * s.perDay / 120)} · mistakes ${Math.round(25 * s.perDay / 120)} · ${b.big ? 40 : 20} mixed timed Qs ${Math.round(25 * s.perDay / 120)} · formula sheet ${Math.round(10 * s.perDay / 120)} min</td></tr>
+        <tr><td>Last Sunday</td><td>Monthly test: ${b.big ? 60 : 30} Qs timed + analysis</td></tr>
+        <tr><td>Phase 2</td><td>${b.big ? "Ek din me: PYQ paper + analysis + fix" : "Paper day ↔ analysis day"} (${MOCK_PLAN.reservedPyqYears.join(", ")} papers reserved — inhe topic-wise practice me mat use karna)</td></tr>
+        <tr><td>Phase 3/4</td><td>${b.big ? "Din 1: mock + analysis + fix · Din 2: revision + mixed practice" : "Mock → analysis + fix → revision day (3-day cycle)"}</td></tr>
         <tr><td>Last 14 days</td><td>Final revision + mock every 2nd day</td></tr>
       </table>
     </div>
@@ -979,8 +993,8 @@ function renderSettings() {
     <div class="form">
       <label class="f">Study minutes per day<input type="number" min="60" max="360" step="15" id="setPerDay" value="${s.perDay}" style="width:auto"></label>
       <label class="f">Weekly revision day<select id="setRest">${["Sunday", "Monday", "Tuesday", "Wednesday", "Thursday", "Friday", "Saturday"].map((d, i) => `<option value="${i}" ${s.restDay === i ? "selected" : ""}>${d}</option>`).join("")}</select></label>
-      <label class="f">Dry-run exam date<input type="date" id="setDry" value="${s.dryRunDate}"></label>
-      <label class="f">Target exam date (rank 1 attempt)<input type="date" id="setExam" value="${s.examDate}"></label>
+      <label class="f">Dry-run exam date (optional)<input type="date" id="setDry" value="${s.dryRunDate}"></label>
+      <label class="f">Target exam date (NIMCET 2027)<input type="date" id="setExam" value="${s.examDate}"></label>
     </div>
     <p class="meta">Dates official notification aane pe update karo (NIMCET aam taur pe June me hota hai).</p>
     <button class="btn primary" data-act="saveSettings">Save settings</button>
@@ -1128,7 +1142,7 @@ document.addEventListener("click", (e) => {
       const s = state.settings;
       s.perDay = Math.min(360, Math.max(60, +$("#setPerDay").value || 120));
       s.restDay = +$("#setRest").value;
-      s.dryRunDate = $("#setDry").value || s.dryRunDate;
+      s.dryRunDate = $("#setDry").value;
       s.examDate = $("#setExam").value || s.examDate;
       const day = state.days[todayStr()];
       if (day && !Object.values(day.checks).some(Boolean)) delete state.days[todayStr()];

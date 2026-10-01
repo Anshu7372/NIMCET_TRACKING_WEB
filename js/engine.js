@@ -221,11 +221,13 @@ function mockScore(m) {
 
 /* ---------- day template ---------- */
 function dayBudget(perDay) {
-  const breaks = Math.round(perDay / 8);            // ~5 min per pomodoro
-  const fixed = 5 + 20 + 5;                          // speed drill + spaced revision + recap
+  const big = perDay >= 210;                         // 3.5 h+ days get longer revision/recap
+  const breaks = Math.round(perDay / 8);             // ~5 min per pomodoro
+  const rev = big ? 30 : 20, recap = big ? 10 : 5;
+  const fixed = 5 + rev + recap;                     // speed drill + spaced revision + recap
   const content = Math.max(20, perDay - breaks - fixed);
   const maths = Math.round((content * 2) / 3);
-  return { breaks, speed: 5, rev: 20, recap: 5, maths, sec: content - maths };
+  return { breaks, speed: 5, rev, recap, maths, sec: content - maths, big };
 }
 
 const SEC_BY_WEEKDAY = { 1: "R", 2: "C", 3: "R", 4: "C", 5: "R", 6: "E" };
@@ -258,6 +260,9 @@ function simulate(state, from, days) {
   let cycle = state.cycleIndex || 0; // position inside the 2- or 3-day cycle
   const exam = s.examDate;
   const out = [];
+  // Non-study days were written for 2 h; scale them to the daily time.
+  const f = s.perDay / 120;
+  const sc = (m) => Math.round(m * f);
 
   const take = (sub, mins) => {
     const tasks = [];
@@ -293,22 +298,22 @@ function simulate(state, from, days) {
     }
     const finalWindow = toExam > 0 && toExam <= 14 && !contentLeft();
 
-    if (wd === rest && studiedAny) {
+    if (wd === rest && studiedAny && !finalWindow) {
       day.phase = contentLeft() ? "p1" : finalWindow ? "final" : papers < MOCK_PLAN.reservedPyqYears.length ? "p2" : mocks < MOCK_PLAN.mockCount ? "p3" : "p4";
       if (isLastSundayOfMonth(date) && completedAny) {
         day.kind = "Monthly revision test";
         day.blocks.push(
-          { title: "Monthly test (timed)", mins: 60, note: "Is mahine ke chapters se 30 mixed Qs (JEE Main + NIMCET PYQ level), timer ke saath." },
-          { title: "Test analysis", mins: 30, note: "Har galat Q → Mistakes tab. Weak subtopics ko ★ tough mark karo." },
-          { title: "Weekly spaced revision backlog", mins: budget.rev + 10, note: "Due list clear karo + mistake log." },
+          { title: "Monthly test (timed)", mins: sc(60), note: `Is mahine ke chapters se ${budget.big ? 60 : 30} mixed Qs (JEE Main + NIMCET PYQ level), timer ke saath.` },
+          { title: "Test analysis", mins: sc(30), note: "Har galat Q → Mistakes tab. Weak subtopics ko ★ tough mark karo." },
+          { title: "Weekly spaced revision backlog", mins: sc(30), note: "Due list clear karo + mistake log." },
         );
       } else {
         day.kind = "Weekly revision";
         day.blocks.push(
-          { title: "Weekly revision: is hafte ke subtopics", mins: 50, note: "Har subtopic: blurt 2 min → formula sheet → 3 Qs.", weekly: true },
-          { title: "Mistake log re-solve", mins: 25, note: "Is hafte ke galat questions bina solution dekhe." },
-          { title: "20 mixed Qs (timed)", mins: 25, note: "Maths 84 sec/Q pace. Galat → mistake log." },
-          { title: "Formula sheet + speed kit", mins: 10, note: "Formula sheets update karo." },
+          { title: "Weekly revision: is hafte ke subtopics", mins: sc(50), note: "Har subtopic: blurt 2 min → formula sheet → 3 Qs.", weekly: true },
+          { title: "Mistake log re-solve", mins: sc(25), note: "Is hafte ke galat questions bina solution dekhe." },
+          { title: `${budget.big ? 40 : 20} mixed Qs (timed)`, mins: sc(25), note: "Maths 84 sec/Q pace. Galat → mistake log." },
+          { title: "Formula sheet + speed kit", mins: sc(10), note: "Formula sheets update karo." },
         );
       }
       out.push(day); continue;
@@ -318,9 +323,12 @@ function simulate(state, from, days) {
       day.phase = "final";
       const mockDay = toExam % 2 === 0;
       day.kind = mockDay ? "Final: mock" : "Final: revision";
-      day.blocks.push(mockDay
-        ? { title: "Full mock (2 hr, exam timing)", mins: 120, note: "Exam wale time (2–4 PM) pe do. Analysis kal subah 20 min." }
-        : { title: "Final revision", mins: 120, note: "Formula sheets (40) → tough topics (40) → mistake log (40). Naya kuch nahi." });
+      if (mockDay) {
+        day.blocks.push({ title: "Full mock (2 hr, exam timing)", mins: 120, note: budget.big ? "Exam wale time (2–4 PM) pe do." : "Exam wale time (2–4 PM) pe do. Analysis kal subah 20 min." });
+        if (budget.big) day.blocks.push({ title: "Mock analysis + formula sheet of weak topics", mins: s.perDay - 120, note: "Galtiyan → Mistakes tab. Sirf revise, naya kuch nahi." });
+      } else {
+        day.blocks.push({ title: "Final revision", mins: s.perDay, note: "Formula sheets → tough topics → mistake log (barabar time). Naya kuch nahi." });
+      }
       out.push(day); continue;
     }
 
@@ -353,6 +361,18 @@ function simulate(state, from, days) {
 
     if (papers < MOCK_PLAN.reservedPyqYears.length) {
       day.phase = "p2";
+      if (cycle % 2 === 0 && budget.big) {
+        // Long day: paper + analysis + fix on the same day.
+        day.kind = "PYQ paper + analysis";
+        day.blocks.push(
+          { title: `Full paper: NIMCET ${MOCK_PLAN.reservedPyqYears[papers]}`, mins: 120, note: "Exact exam timing & section timers. Mocks tab me score daalo (type: PYQ paper).", tag: "cycle" },
+          { title: "Paper analysis", mins: 60, note: "Har galat/skipped Q ka reason (Mistakes tab). Section-wise time dekho.", tag: "paper-analysis" },
+          { title: "Weak subtopic fix + spaced revision", mins: s.perDay - 180, rev: true },
+        );
+        papers++;
+        cycle += 2;
+        out.push(day); continue;
+      }
       if (cycle % 2 === 0) {
         day.kind = "PYQ paper";
         day.blocks.push({ title: `Full paper: NIMCET ${MOCK_PLAN.reservedPyqYears[papers]}`, mins: 120, note: "Exact exam timing & section timers. Mocks tab me score daalo (type: PYQ paper).", tag: "cycle" });
@@ -371,6 +391,18 @@ function simulate(state, from, days) {
 
     day.phase = mocks < MOCK_PLAN.mockCount ? "p3" : "p4";
     const c = cycle % 3;
+    if (c === 0 && budget.big) {
+      // Long day: mock + analysis + fix on the same day; next day is a revision day.
+      day.kind = "Mock + analysis";
+      day.blocks.push(
+        { title: `Full mock #${mocks + 1}`, mins: 120, note: "Exam timing, 3-pass strategy. Mocks tab me score + mistakes.", tag: "cycle" },
+        { title: "Mock analysis", mins: 60, note: "Mocks tab ka analysis checklist follow karo. Claude 'Mock analysis' prompt use karo.", tag: "mock-analysis" },
+        { title: "Fix: weakest 2 subtopics", mins: s.perDay - 180, note: "15 Qs each (JEE Main / NIMCET PYQ), D-level protocol ke saath." },
+      );
+      mocks++;
+      cycle += 2;
+      out.push(day); continue;
+    }
     if (c === 0) {
       day.kind = "Mock";
       day.blocks.push({ title: `Full mock #${mocks + 1}`, mins: 120, note: "Exam timing, 3-pass strategy. Mocks tab me score + mistakes.", tag: "cycle" });
@@ -386,9 +418,9 @@ function simulate(state, from, days) {
       day.kind = "Revision & practice";
       day.blocks.push(
         { title: "Revision day: start", mins: 0, note: "Aaj revision day hai — tick karo shuru karne pe.", tag: "cycle" },
-        { title: "Spaced revision + tough topics", mins: 45, rev: true },
-        { title: "Mistake log re-solve", mins: 30 },
-        { title: "Mixed timed practice (30 Qs)", mins: 45, note: "Sab subjects mix, section time limits ke saath." },
+        { title: "Spaced revision + tough topics", mins: sc(45), rev: true },
+        { title: "Mistake log re-solve", mins: sc(30) },
+        { title: `Mixed timed practice (${budget.big ? 60 : 30} Qs)`, mins: sc(45), note: "Sab subjects mix, section time limits ke saath." },
       );
     }
     cycle++;

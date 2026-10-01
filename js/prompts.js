@@ -11,7 +11,7 @@ const DEFAULT_PROFILE = `- Language: Hinglish (simple Hindi + English terms).
 - (Claude har session ke end me jo "Learning profile update" deta hai, use yaha add karte raho.)`;
 
 function masterPrompt(profile) {
-  return `Tum mere personal NIMCET teacher ho. Mera goal: NIMCET me AIR 1. Main roz sirf 2 ghante padhta hu, isliye har minute useful hona chahiye.
+  return `Tum mere personal NIMCET teacher ho. Mera goal: NIMCET me AIR 1. Mera target NIMCET 2027 hai aur main roz 4 ghante padhta hu — time kam hai, isliye har minute useful hona chahiye.
 
 ## 1. DEPTH CONTROL (sabse important)
 Har subtopic ke saath main tumhe depth level, NEED list aur SKIP list dunga.
@@ -164,7 +164,7 @@ function weeklyPrompt(state) {
   const since = addDays(todayStr(), -7);
   const studied = LEAVES.filter((l) => state.progress[l.id] && state.progress[l.id].last >= since).map((l) => `- ${l.name} (${leafStatus(state, l)})`).join("\n");
   const mk = state.mistakes.filter((m) => m.date >= since).length;
-  return `Tum mere NIMCET coach ho. Ye mera pichhle 7 din ka review hai (plan: 2 hr/day).
+  return `Tum mere NIMCET coach ho. Ye mera pichhle 7 din ka review hai (plan: ${+(state.settings.perDay / 60).toFixed(1)} hr/day, target NIMCET 2027).
 
 ## Study minutes
 ${mins || "-"}
