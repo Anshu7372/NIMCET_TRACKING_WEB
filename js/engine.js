@@ -59,10 +59,12 @@ function buildLeaves() {
       tp.leaves.forEach((lf) => {
         const [name, w0, d0, need, skip, tip] = lf;
         const id = `${ch.id}:${slug(name)}`;
-        // Blend the PYQ-trend estimate with the real NIMCET 2026 paper, and never
+        // Blend the PYQ-trend estimate with the real NIMCET papers (2025, 2026), and never
         // keep the depth below the level that was actually asked.
         const y26 = typeof PYQ_COUNTS !== "undefined" && PYQ_COUNTS[id] ? PYQ_COUNTS[id] : null;
-        const w = Math.round((0.6 * w0 + 0.4 * (y26 ? y26.n : 0)) * 10) / 10 || 0.1;
+        // Average questions per paper over the real papers we have (2025, 2026).
+        const perPaper = y26 ? y26.n / (typeof PYQ_PAPERS !== "undefined" ? PYQ_PAPERS.length : 1) : 0;
+        const w = Math.round((0.5 * w0 + 0.5 * perPaper) * 10) / 10 || 0.1;
         const d = Math.max(d0, y26 ? y26.d : 0);
         const r = RULES[ch.subject];
         const noNcert =

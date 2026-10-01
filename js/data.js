@@ -141,6 +141,8 @@ const CHAPTERS = [
     ],
     prereq: ["Algebraic identities (a±b)², (a±b)³, a³±b³", "Factorisation by splitting middle term", "Log values: log2=0.3010, log3=0.4771, log5=0.6990, log7=0.8451"],
     speed: [
+      "Power sums xⁿ + yⁿ: Sₙ = (x + y)Sₙ₋₁ − xy·Sₙ₋₂ — x⁵ + y⁵ bina solve kiye (2025).",
+      "log equation x^(f(log x)) = c: dono taraf log lo ⇒ quadratic in t = log x; product of roots = base^(t₁ + t₂) (2025).",
       "Quadratic me pehle discriminant ka sign socho — aadhe questions wahi se solve.",
       "Options se value daal ke check (back-substitution) — equations wale MCQs me sabse fast.",
       "Log: sab kuch ek base me convert karo, log_a b · log_b a = 1 yaad rakho.",
@@ -260,6 +262,8 @@ const CHAPTERS = [
     ],
     prereq: ["Factorials till 10! yaad (10! = 3628800)", "ⁿCᵣ = ⁿCₙ₋ᵣ, Pascal rule", "Powers of 2 till 2¹⁰"],
     speed: [
+      "Digit problems me divisibility by 3: digits ko residue 0/1/2 groups me baanto (2025).",
+      "5ⁿ − 4n − 1 type: (1 + 4)ⁿ binomial expand karo ⇒ 16 se divisible (2025).",
       "Pehle decide: ORDER matter karta hai? Haan → P, Nahi → C. Ye 1 question 50% galtiyaan rokta hai.",
       "Together wale → group ko 1 object; Not together → Total − together.",
       "Binomial general term Tᵣ₊₁ = ⁿCᵣ aⁿ⁻ʳ bʳ — power equation likho, r nikalo.",
@@ -357,9 +361,13 @@ const CHAPTERS = [
       ["Matrices, types, operations", "Class 12 Ch 3 — Matrices", "New"],
       ["Determinants, adjoint, inverse, linear systems", "Class 12 Ch 4 — Determinants", "New"],
       ["Properties of determinants", "Class 12 Ch 4 — 'Properties of Determinants'", "Old (new edition se hata)"],
+      ["Matrix powers, nilpotent/idempotent matrices, matrix polynomials", "Class 12 Ch 3 — Matrices (miscellaneous exercise) + JEE Main PYQs", "New"],
     ],
     prereq: ["2×2 and 3×3 determinant expansion fast", "Linear equations (M02)"],
     speed: [
+      "Matrix power Bⁿ: B = λI + N (N nilpotent) ⇒ binomial, N³ = 0 pe ruk jao (2025).",
+      "Matrix polynomial se inverse: A² + 5A + 6I = I ⇒ (A + 2I)(A + 3I) = I (2025).",
+      "x + y + z = 0 (jaise cube roots) ⇒ circulant determinant = 0 (2025).",
       "Property-based questions: kabhi expand mat karo pehle — row/column operations se zeros banao.",
       "Formulas ka card: |kA| = kⁿ|A|, |adj A| = |A|ⁿ⁻¹, adj(adj A) = |A|ⁿ⁻²A, |A⁻¹| = 1/|A|.",
       "Options check with simple matrices (I, diagonal) — 'which is always true' type me.",
@@ -413,6 +421,9 @@ const CHAPTERS = [
     ],
     prereq: ["Trig table 0°, 30°, 45°, 60°, 90° + ASTC rule", "Allied angles (90°±θ, 180°±θ)", "Values: sin15°, cos15°, sin18°, cos36°, tan22.5°"],
     speed: [
+      "cot θ + tan θ = 2/sin 2θ, cot θ − tan θ = 2 cot 2θ (2025).",
+      "Cos product me complementary angles: cos 50 = sin 40, cos 70 = sin 20 (2025).",
+      "Heights & distances: 2025 me 5 + 2026 me 2 Q — tan/cot 30, 45, 60 ratta + diagram.",
       "Identity questions: θ = 0, 30°, 45° daal ke options check — sabse fast.",
       "Max/min of a sinθ + b cosθ + c = c ± √(a²+b²).",
       "Inverse trig: principal value ranges ka ek card bana lo aur roz 1 min dekho.",
@@ -552,9 +563,12 @@ const CHAPTERS = [
       ["Indefinite & definite integrals, properties", "Class 12 Ch 7 — Integrals", "New"],
       ["Area under curves", "Class 12 Ch 8 — Application of Integrals", "New"],
       ["Intermediate Value Theorem, series expansions for limits", "NCERT me nahi — lecture + JEE Main PYQs", "—"],
+      ["Leibniz rule (d/dx of an integral with variable limits)", "NCERT me nahi — lecture + JEE Main PYQs", "—"],
     ],
     prereq: ["Functions & graphs (M01)", "Trig identities (M07)", "Standard derivative & integral tables yaad", "Straight lines (M08)"],
     speed: [
+      "Integrand (1 + 2cos x)/(2 + cos x)² jaisa ho to reverse differentiation: d/dx[sin x/(2 + cos x)] (2025).",
+      "Leibniz rule d/dx ∫ᵤᵛ f = f(v)v′ − f(u)u′ (2025).",
       "Standard limits card: sinx/x, (eˣ−1)/x, (aˣ−1)/x, ln(1+x)/x, (1+x)^(1/x) → e.",
       "1^∞ form: e^(lim (f−1)·g) — 1 line me answer.",
       "Definite integral: pehle KING's property (a+b−x) try karo — 50% questions 1 step me.",
@@ -669,9 +683,10 @@ const CHAPTERS = [
   /* ===================== ANALYTICAL ABILITY & REASONING ===================== */
   {
     id: "R01", subject: "R", name: "Series, Analogy & Classification",
-    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
+    ncert: "", obj: "R.S. Aggarwal — A Modern Approach to Verbal & Non-Verbal Reasoning (S. Chand, latest revised edition): Series Completion, Analogy, Classification · + NIMCET PYQs + test series",
     prereq: ["Squares 1–30, cubes 1–15, primes till 100", "Alphabet positions A=1…Z=26 and reverse (EJOTY: 5,10,15,20,25)"],
     speed: [
+      "Multi-row series: har row a, a×k, a×k + k with k badhta hai (2025). ×k ± c alternate series (2025).",
       "Series me order: difference → difference of difference → ratio → squares/cubes ± → alternate series.",
       "EJOTY trick se letter positions instant.",
     ],
@@ -696,9 +711,10 @@ const CHAPTERS = [
   },
   {
     id: "R02", subject: "R", name: "Coding, Blood Relations, Direction & Ranking",
-    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
+    ncert: "", obj: "R.S. Aggarwal — A Modern Approach to Verbal & Non-Verbal Reasoning (S. Chand, latest revised edition): Coding-Decoding, Blood Relations, Direction Sense Test, Logical Sequence of Words / Alphabet Test (ranking) · + NIMCET PYQs + test series",
     prereq: ["Alphabet positions & opposite letters (A↔Z, B↔Y …)", "Pythagoras triplets (3-4-5, 5-12-13, 6-8-10)"],
     speed: [
+      "Coding: alternating shifts (+1, −2, +3 …) aur alphabet wrap-around (A − 3 = X) (2025, 2026).",
       "Blood relation: family tree symbols (□ male, ○ female, = couple, | child) — kabhi dimaag me mat socho, likho.",
       "Direction: har turn paper pe arrow — 'left of facing direction' galti mat karo.",
     ],
@@ -728,7 +744,7 @@ const CHAPTERS = [
   },
   {
     id: "R03", subject: "R", name: "Seating Arrangement & Puzzles",
-    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
+    ncert: "", obj: "R.S. Aggarwal — A Modern Approach to Verbal & Non-Verbal Reasoning (S. Chand, latest revised edition): Puzzle Test, Seating Arrangement, Mathematical Operations, Machine Input-Output (Input–Output) · + NIMCET PYQs + test series",
     prereq: ["Coding/ranking basics (R02)"],
     speed: [
       "Pehle definite info fix karo, fir 'possibilities' me 2 case banao — 3+ cases rarely needed.",
@@ -759,9 +775,10 @@ const CHAPTERS = [
   },
   {
     id: "R04", subject: "R", name: "Logical & Critical Reasoning",
-    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
+    ncert: "", obj: "R.S. Aggarwal — A Modern Approach to Verbal & Non-Verbal Reasoning (S. Chand, latest revised edition): Logical Venn Diagrams, Syllogism, Statement–Conclusions, Statement–Arguments, Statement–Course of Action, Cause and Effect, Data Sufficiency, Logical Deduction · + NIMCET PYQs + test series",
     prereq: ["Basic set/Venn understanding (M01)"],
     speed: [
+      "Truth-teller/liar: pehle 'X sach' maano, fir 'X jhooth' — dono cases poore chalao (2025).",
       "Syllogism: Venn diagrams only — 'possibility' cases alag se.",
       "Data sufficiency: har statement ALAG check, fir combined. Answer calculate mat karo — sirf 'milega ya nahi'.",
     ],
@@ -774,7 +791,7 @@ const CHAPTERS = [
           "Implicit assumptions, strong/weak arguments, cause–effect.",
           "", "Extreme words (only, always) wale options aksar galat."],
         ["Critical reasoning (strengthen/weaken, inference)", 1.0, 2,
-          "Identify conclusion, find assumption, strengthen/weaken, common fallacies (circular argument, bandwagon, appeal to authority), passage-based inference.",
+          "Identify conclusion, find assumption, strengthen/weaken, common fallacies (circular argument, bandwagon, appeal to authority), passage-based inference, truth-teller/liar puzzles, 'best example of a definition', experiment-result conclusions.",
           "GMAT-level CR.", ""],
       ]},
       { name: "Data Sufficiency & Venn", leaves: [
@@ -789,7 +806,7 @@ const CHAPTERS = [
   },
   {
     id: "R05", subject: "R", name: "Non-verbal Reasoning, Clocks & Calendars",
-    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
+    ncert: "", obj: "R.S. Aggarwal — A Modern Approach to Verbal & Non-Verbal Reasoning (S. Chand, latest revised edition): Clocks, Calendar, Cube and Dice, Non-Verbal (Series, Mirror/Water Images, Paper Folding, Counting of Figures) · + NIMCET PYQs + test series",
     prereq: ["Remainders by 7", "Angle basics"],
     speed: [
       "Clock angle = |30H − 5.5M|.",
@@ -820,7 +837,7 @@ const CHAPTERS = [
   },
   {
     id: "R06", subject: "R", name: "Numerical Reasoning (Quantitative Aptitude)",
-    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
+    ncert: "", obj: "R.S. Aggarwal — Quantitative Aptitude for Competitive Examinations (S. Chand, latest revised edition): Number System, H.C.F. & L.C.M., Percentage, Profit & Loss, Ratio & Proportion, Partnership, Average, Problems on Ages, Alligation or Mixture, Time & Work, Pipes & Cisterns, Time & Distance, Problems on Trains, Boats & Streams, Simple Interest, Compound Interest · + NIMCET PYQs + test series",
     prereq: ["Percent ↔ fraction table (1/2 … 1/20)", "Tables till 25", "Squares till 30"],
     speed: [
       "Percent-fraction table ka use (12.5% = 1/8, 16.66% = 1/6) — calculation 3x fast.",
@@ -858,7 +875,7 @@ const CHAPTERS = [
   },
   {
     id: "R07", subject: "R", name: "Data Interpretation & Visualization",
-    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
+    ncert: "", obj: "R.S. Aggarwal — Quantitative Aptitude for Competitive Examinations (S. Chand, latest revised edition): Data Interpretation — Tabulation, Bar Graphs, Pie Charts, Line Graphs · + NIMCET PYQs + test series",
     prereq: ["Percentages (R06)", "Approximation & fast division"],
     speed: [
       "Approximation: options door-door hon to calculate exact mat karo.",
@@ -876,9 +893,11 @@ const CHAPTERS = [
   /* ============================ COMPUTER AWARENESS ============================ */
   {
     id: "C01", subject: "C", name: "Number Systems & Data Representation",
-    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
+    ncert: "", obj: "Pradeep K. Sinha & Priti Sinha — Computer Fundamentals (BPB, 6th edition): Number Systems, Computer Codes (BCD, ASCII, Unicode), Computer Arithmetic (binary add/sub/mul/div, complements, floating point) · + NIMCET PYQs + test series",
     prereq: ["Powers of 2 till 2¹⁶", "Nibble table 0000–1111 ↔ 0–F"],
     speed: [
+      "Overflow: do same-sign numbers ka sum opposite sign de ⇒ overflow (2025).",
+      "Binary fraction weights: .5, .25, .125, .0625, .03125 (2025).",
       "Binary ↔ Hex: 4-bit groups; Binary ↔ Octal: 3-bit groups — decimal se hoke mat jao.",
       "Decimal → binary: powers of 2 subtract method (division se fast).",
     ],
@@ -914,7 +933,7 @@ const CHAPTERS = [
   },
   {
     id: "C02", subject: "C", name: "Boolean Algebra",
-    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
+    ncert: "", obj: "Pradeep K. Sinha & Priti Sinha — Computer Fundamentals (BPB, 6th edition): Boolean Algebra and Logic Circuits (laws, De Morgan, SOP/POS, K-map basics, logic gates) · + NIMCET PYQs + test series",
     prereq: ["Truth tables", "Set theory Venn (M01)"],
     speed: [
       "Simplify ke liye K-map > algebra (3–4 variables).",
@@ -941,16 +960,19 @@ const CHAPTERS = [
   },
   {
     id: "C03", subject: "C", name: "Computer Organisation & Hardware",
-    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
+    ncert: "", obj: "Pradeep K. Sinha & Priti Sinha — Computer Fundamentals (BPB, 6th edition): Basic Computer Organization, Processor and Memory (CPU, registers, instruction format, RAM/ROM/cache), Secondary Storage Devices (HDD geometry, SSD, optical, tape), Input-Output Devices · + NIMCET PYQs + test series",
     prereq: ["Units: bit, byte, KB = 2¹⁰ B, MB = 2²⁰ B"],
-    speed: ["Abbreviations & facts ka flashcard deck — roz 5 min."],
+    speed: [
+      "Abbreviations & facts ka flashcard deck — roz 5 min.",
+      "Opcode bits = word − address bits − register bits ⇒ instructions = 2^opcode (2025, 2026).",
+    ],
     topics: [
       { name: "Organisation", leaves: [
         ["CPU: ALU, CU, registers, instruction cycle & formats", 1.2, 2,
-          "Components, fetch–decode–execute (PC, IR, CU vs ALU roles), instruction formats: opcode vs operand, address bits ⇒ 2ⁿ addressable locations, addressing modes basics.",
+          "Components, fetch–decode–execute (PC, IR, CU vs ALU roles), instruction formats: opcode vs operand, address bits ⇒ 2ⁿ addressable locations, opcode bits = word size − address bits − register-field bits (max distinct instructions), addressing modes basics.",
           "Pipelining hazards deep.", ""],
         ["Memory hierarchy & memory units", 1.2, 2,
-          "Registers > cache > RAM > disk, RAM/ROM types, address lines vs memory size (2ⁿ), cache hit ratio basic.",
+          "Registers > cache > RAM > disk, RAM/ROM types, DRAM (capacitor, refresh, dense → main memory) vs SRAM (flip-flop, fast → cache), units of transfer (CPU–word, cache–block, memory–page), address lines vs memory size (2ⁿ), cache hit ratio basic.",
           "Cache mapping numericals deep.", "n address lines ⇒ 2ⁿ locations."],
         ["Input, output, storage & backup devices", 1.2, 1,
           "Input (keyboard, mouse, scanner, mic, touch, OCR/MICR/OMR), output (monitor, printer types, speakers, plotter), storage (HDD, SSD, USB drive, optical, tape) & backup devices; disk geometry (surfaces, tracks, sectors, cylinder = data readable without head movement); capacity/speed comparisons.",
@@ -960,7 +982,7 @@ const CHAPTERS = [
   },
   {
     id: "C04", subject: "C", name: "Software, Internet & Email",
-    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
+    ncert: "", obj: "Pradeep K. Sinha & Priti Sinha — Computer Fundamentals (BPB, 6th edition): Computer Software (system vs application, utilities, drivers, compiler/linker/debugger), Operating Systems (functions, virtual memory), The Internet & Internet Basics (DNS, URL, HTTP, browser, email, security) · + NIMCET PYQs + test series",
     prereq: ["Basic computer use"],
     speed: ["Facts-type questions: flashcards (OS names, ports/protocols, malware types) — roz 5 min."],
     topics: [
@@ -969,7 +991,7 @@ const CHAPTERS = [
           "Functions of an OS (process, memory, file, device management), virtual memory — why (protection/isolation between processes + more address space), types (batch, multi-tasking, real-time, mobile), examples and their makers, GUI vs CLI, file systems basics.",
           "OS internals: scheduling algorithms, paging numericals.", ""],
         ["System software (utilities, device drivers) & application software", 0.8, 1,
-          "System vs application software (drivers, OS, kernel = system; browser, word processor = application), utilities (antivirus, disk cleanup, compression, backup), device drivers, static vs dynamic linking (DLL pros/cons), compiler/interpreter/assembler/linker/loader, open-source vs proprietary.",
+          "System vs application software (drivers, OS, kernel = system; browser, word processor = application), utilities (antivirus, disk cleanup, compression, backup), device drivers, static vs dynamic linking (DLL pros/cons), compiler/interpreter/assembler/linker/loader/debugger (breakpoints, step execution), open-source vs proprietary.",
           "Compiler design internals.", "Driver = OS aur hardware ke beech translator."],
       ]},
       { name: "Internet & Email", leaves: [
@@ -989,7 +1011,7 @@ const CHAPTERS = [
   /* ============================ GENERAL ENGLISH ============================ */
   {
     id: "E01", subject: "E", name: "Reading Comprehension",
-    ncert: "", obj: "NIMCET PYQs + test series topic tests (+ daily editorial)",
+    ncert: "", obj: "Arihant — Objective General English, S.P. Bakshi (2026-27 edition): Comprehension (Reading Comprehension, Cloze Test, Sentence Completion) · + NIMCET PYQs + test series",
     prereq: ["Daily 1 editorial (10 min)"],
     speed: ["Pehle questions padho, fir passage — answer locate karo."],
     topics: [
@@ -1002,7 +1024,7 @@ const CHAPTERS = [
   },
   {
     id: "E02", subject: "E", name: "Vocabulary",
-    ncert: "", obj: "NIMCET PYQs + test series topic tests",
+    ncert: "", obj: "Arihant — Objective General English, S.P. Bakshi (2026-27 edition): Vocabulary — Synonyms, Antonyms, One Word Substitution, Idioms & Phrases, Phrasal Verbs, Word Formation · + NIMCET PYQs + test series",
     prereq: ["Roots: bene, mal, chron, graph, anti, ante …"],
     speed: ["Root words se unknown words guess — 1 root = 10 words."],
     topics: [
@@ -1016,14 +1038,17 @@ const CHAPTERS = [
   },
   {
     id: "E03", subject: "E", name: "Grammar & Usage",
-    ncert: "", obj: "NIMCET PYQs + test series topic tests",
+    ncert: "", obj: "Arihant — Objective General English, S.P. Bakshi (2026-27 edition): Grammar — Articles, Prepositions, Tenses, Subject-Verb Agreement, Voice, Narration, Spotting Errors, Sentence Improvement, Fill in the Blanks · + NIMCET PYQs + test series",
     prereq: [],
-    speed: ["Error spotting: subject–verb agreement pehle check karo, fir tense, fir preposition."],
+    speed: [
+      "Error spotting: subject–verb agreement pehle check karo, fir tense, fir preposition.",
+      "Stative verbs (understand, know, believe) -ing me nahi; lay–laid–laid vs lie–lay–lain (2025).",
+    ],
     topics: [
       { name: "Grammar", leaves: [
         ["Sentence forms (active/passive, direct/indirect, sentence types)", 0.7, 2, "Voice change, narration change, simple/compound/complex sentences, transformation of sentences, types of phrases (noun, adjectival, adverbial, prepositional).", "", ""],
-        ["Articles & prepositions", 0.9, 1, "a/an/the rules, common preposition usages.", "", ""],
-        ["Verbs, tenses & subject–verb agreement", 0.8, 2, "Tense consistency, sequence of past events (had + V3 for the earlier one), SVA rules: neither…nor (nearer subject), each/every, 'a series of', 'the majority of'.", "", ""],
+        ["Articles & prepositions", 0.9, 1, "a/an by sound (an MBA, a university), the rules, common preposition usages (in a city, on a street, at a point).", "", ""],
+        ["Verbs, tenses & subject–verb agreement", 0.8, 2, "Tense consistency, sequence of past events (had + V3 for the earlier one), SVA rules: neither…nor (nearer subject), each/every, 'one of the …', 'a series of', 'the majority of', compound subjects (A and B ⇒ plural), stative verbs not in -ing, lay/lie forms.", "", ""],
         ["Error spotting, sentence improvement & fill in the blanks", 0.8, 2, "Common error types, accuracy & fluency of expression.", "", ""],
         ["Technical writing", 0.4, 1, "Clarity, conciseness, formal tone, ordering sentences in a paragraph, choosing precise words.", "Report formats in depth.", ""],
       ]},
@@ -1105,3 +1130,15 @@ const MOCK_PLAN = {
   reservedPyqYears: ["2025", "2024", "2023", "2022", "2021", "2020"],
   mockCount: 30,
 };
+
+// Books for the non-maths sections (2025 + 2026 syllabus). Maths: NCERT + JEE Main PYQs only.
+const BOOK_PLAN = [
+  { sub: "Reasoning", book: "R.S. Aggarwal — A Modern Approach to Verbal & Non-Verbal Reasoning (S. Chand, latest revised edition)",
+    chapters: "Series Completion, Analogy, Classification, Coding-Decoding, Blood Relations, Direction Sense Test, Alphabet Test / Ranking, Puzzle Test, Seating Arrangement, Mathematical Operations, Machine Input-Output, Logical Venn Diagrams, Syllogism, Statement–Conclusions / Arguments / Course of Action, Cause and Effect, Data Sufficiency, Clocks, Calendar, Cube and Dice; Non-Verbal: Series, Mirror & Water Images, Paper Folding, Counting of Figures" },
+  { sub: "Aptitude (Numerical reasoning + DI)", book: "R.S. Aggarwal — Quantitative Aptitude for Competitive Examinations (S. Chand, latest revised edition)",
+    chapters: "Number System, H.C.F. & L.C.M., Percentage, Profit & Loss, Ratio & Proportion, Partnership, Average, Problems on Ages, Alligation or Mixture, Time & Work, Pipes & Cisterns, Time & Distance, Problems on Trains, Boats & Streams, Simple Interest, Compound Interest, Data Interpretation (Tabulation, Bar Graphs, Pie Charts, Line Graphs)" },
+  { sub: "Computer Awareness", book: "Pradeep K. Sinha & Priti Sinha — Computer Fundamentals (BPB, 6th edition)",
+    chapters: "Number Systems, Computer Codes, Computer Arithmetic, Boolean Algebra and Logic Circuits, Basic Computer Organization, Processor and Memory, Secondary Storage Devices, Input-Output Devices, Computer Software, Operating Systems, The Internet (web, email, security). Skip: programming languages, compiler design, pipelining, microprogramming (2026 syllabus me nahi)." },
+  { sub: "General English", book: "Arihant — Objective General English, S.P. Bakshi (2026-27 edition)",
+    chapters: "Spotting Errors, Sentence Improvement, Fill in the Blanks, Articles, Prepositions, Tenses, Subject-Verb Agreement, Voice, Narration, Synonyms, Antonyms, One Word Substitution, Idioms & Phrases, Phrasal Verbs, Reading Comprehension, Cloze Test" },
+];

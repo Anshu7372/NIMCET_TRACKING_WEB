@@ -380,30 +380,3 @@ const PYQ_2026_ROWS = [
     "Corroborate = support/confirm (a theory). Collude = secretly conspire.",
     "Milte-julte words (collaborate / collude / corroborate) mix."],
 ];
-
-const PYQ_2026_SECTIONS = [
-  { id: "M", name: "Mathematics", from: 1, to: 50, offset: 0 },
-  { id: "R", name: "Analytical Ability & Logical Reasoning", from: 51, to: 90, offset: 50 },
-  { id: "C", name: "Computer Awareness", from: 91, to: 110, offset: 90 },
-  { id: "E", name: "General English", from: 111, to: 120, offset: 90 },
-];
-
-const PYQ_2026 = {
-  year: 2026,
-  date: "2026-06-06",
-  label: "NIMCET 2026",
-  source: "Official CBT paper (response sheet), 120 questions; answers re-solved and verified",
-  qs: PYQ_2026_ROWS.map(([n, leaf, d, ans, key, trap, flag, off]) => {
-    const sec = PYQ_2026_SECTIONS.find((s) => n >= s.from && n <= s.to);
-    return { n, leaf, d, ans, key, trap, flag: flag || "", off: off || "", sec: sec.id, paperQ: n - sec.offset, secName: sec.name };
-  }),
-};
-
-// Questions per subtopic in NIMCET 2026 (used for weightage, depth and the syllabus badges).
-const PYQ_COUNTS = {};
-for (const q of PYQ_2026.qs) {
-  const c = (PYQ_COUNTS[q.leaf] = PYQ_COUNTS[q.leaf] || { n: 0, d: 0, refs: [] });
-  c.n++;
-  c.d = Math.max(c.d, q.d);
-  c.refs.push(q.n);
-}

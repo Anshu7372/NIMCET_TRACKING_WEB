@@ -40,11 +40,22 @@ At 4 hrs/day (110 min maths + 55 min second subject + 30 min spaced revision + s
 
 > Weightage figures are estimates from PYQ trends, not official numbers. Check the syllabus and exam date against the official notification (nimcet.admissions.nic.in) every year.
 
-## NIMCET 2026 PYQ bank
+## NIMCET PYQ bank (2025 + 2026)
 
-`js/pyq2026.js` holds all 120 questions of the actual NIMCET 2026 paper (6 June 2026) with subtopic, depth asked, verified answer, key idea, common trap and flags. `pyq/2026/q<n>.webp` are the question + option images, re-assembled from the response sheet's own images without answer ticks, candidate details or watermark.
+`js/pyq2025.js` and `js/pyq2026.js` hold all 120 questions of the actual NIMCET 2025 (8 June) and 2026 (6 June) papers: subtopic, depth asked, verified answer, key idea, common trap and flags. `js/pyq.js` builds the bank and per-subtopic counts. `pyq/<year>/q<n>.webp` are the question + option images, re-assembled from the response sheets' own images without answer ticks, candidate details or watermark.
 
-Every official-key answer was re-solved. Q107 (Computer Q17) uses the verified answer B (official key A looks wrong); Q44, Q62 and Q74 carry a note because the question itself is flawed. The 2026 counts are blended into each subtopic's weightage (60% estimate + 40% 2026) and raise its depth to the level asked.
+- Every official-key answer was re-solved. 2025: all keys agree (8 questions carry an ambiguity note). 2026: Q107 uses the verified answer B (official key A looks wrong); Q44, Q62, Q74 carry a note.
+- 13 questions of 2025 are outside the revised 2026 syllabus (vectors, normal/Poisson distribution, C programming, pipelining/TLB, compiler design, microprogramming, I/O organisation). They sit in the "Out of syllabus" practice set and are not added to the mistake log.
+- Subtopic weightage = 50% estimate + 50% average questions per real paper; depth is raised to the level asked.
+
+## Books
+
+Maths uses only NCERT (topic-wise class/chapter/edition table in the Syllabus tab), JEE Main PYQs and NIMCET PYQs. Other sections (chapter lists in the Guide tab):
+
+- Reasoning: R.S. Aggarwal, A Modern Approach to Verbal & Non-Verbal Reasoning (S. Chand, latest revised edition)
+- Aptitude: R.S. Aggarwal, Quantitative Aptitude for Competitive Examinations (S. Chand, latest revised edition)
+- Computer: Pradeep K. Sinha & Priti Sinha, Computer Fundamentals (BPB, 6th edition)
+- English: Arihant, Objective General English by S.P. Bakshi (2026-27 edition)
 
 ## claude.ai artifact version
 

@@ -80,10 +80,13 @@ let bankError = "";
 
 // Built-in NIMCET PYQ bank (actual 2026 paper, answers verified) — ships with the app.
 const SEC_SHORT = { M: "Maths", R: "Reasoning", C: "Computer", E: "English" };
-const BUILTIN = (typeof PYQ_2026 !== "undefined" ? PYQ_2026.qs : []).map((q) => ({
-  id: "n26-" + q.n, leaf: q.leaf, ans: q.ans, conc: q.key, trap: q.trap, flag: q.flag, off: q.off, d: q.d,
-  src: `NIMCET 2026 · ${SEC_SHORT[q.sec]} Q${q.paperQ}`, img: `pyq/2026/q${q.n}.webp`, builtin: true, set: "pyq26", at: q.n,
+const BUILTIN = (typeof PYQ_ALL !== "undefined" ? PYQ_ALL : []).map((q) => ({
+  id: `n${String(q.year).slice(2)}-${q.n}`, leaf: q.leaf, ans: q.ans, conc: q.key, trap: q.trap, flag: q.flag, off: q.off, d: q.d,
+  sec: q.sec, year: q.year, oos: q.oos,
+  src: `NIMCET ${q.year} · ${SEC_SHORT[q.sec]} Q${q.paperQ}`, img: `pyq/${q.year}/q${q.n}.webp`, builtin: true,
+  set: q.oos ? "oos" : "pyq", at: (q.year - 2000) * 1000 + q.n,
 }));
+const PYQ_YEARS = [...new Set(BUILTIN.map((q) => q.year))].sort((a, b) => b - a);
 let UPLOADS = [];
 
 function indexBank(list) {
@@ -149,18 +152,19 @@ async function compressImage(file) {
 }
 
 /* ---------------- practice engine ---------------- */
-ui.pq = { f: { set: "pyq26", sub: "", ch: "", leaf: "", st: "new", src: "", order: "added" }, list: null, idx: 0, given: "", guess: false, res: null, t0: 0, done: [], why: "" };
+ui.pq = { f: { set: "pyq", year: "", sub: "", ch: "", leaf: "", st: "new", src: "", order: "added" }, list: null, idx: 0, given: "", guess: false, res: null, t0: 0, done: [], why: "" };
 ui.adm = { leaf: "", src: "", items: [], key: "", saving: false, editing: null, filter: "" };
 
 const leafOf = (q) => LEAF[q.leaf];
-const subjectOf = (q) => (leafOf(q) ? leafOf(q).ch.subject : "M");
+const subjectOf = (q) => q.sec || (leafOf(q) ? leafOf(q).ch.subject : "M");
 
 function practiceList(f) {
   let list = QBANK.filter((q) => {
     const l = leafOf(q);
-    if (f.set === "pyq26" && q.set !== "pyq26") return false;
+    if (f.set && f.set !== "mine" && q.set !== f.set) return false;
     if (f.set === "mine" && q.builtin) return false;
-    if (f.sub && (!l || l.ch.subject !== f.sub)) return false;
+    if (f.year && q.year !== +f.year) return false;
+    if (f.sub && subjectOf(q) !== f.sub) return false;
     if (f.ch && (!l || l.ch.id !== f.ch)) return false;
     if (f.leaf && q.leaf !== f.leaf) return false;
     if (f.src && !String(q.src || "").toLowerCase().includes(f.src.toLowerCase())) return false;
@@ -211,7 +215,9 @@ function recordAttempt(q, g, secs, guess) {
   const mid = "q-" + q.id;
   const m = state.mistakes.find((x) => x.id === mid);
   let diag = null;
-  if (!ok) {
+  if (!ok && q.oos) {
+    diag = { type: "Out of syllabus", lines: [`Ye question revised 2026 syllabus me nahi hai (${q.oos}) — Mistake log me nahi daala.`] };
+  } else if (!ok) {
     diag = diagnose(q, g, secs, guess);
     const note = `Mera: ${g || "—"} · Sahi: ${q.ans}. ${diag.lines[0]}`;
     if (m) {
@@ -273,7 +279,7 @@ function renderPractice() {
       <ul class="clean meta"><li>✔ Subject / chapter / subtopic / source se filter</li><li>✔ Option chuno → page khud check karega, timer ke saath</li>
       <li>✔ Galat hua → kyu hua (possible galti) + kya revise karna hai</li><li>✔ Galat question apne aap Mistake log me → 1-3-7-21 din pe dobara solve</li></ul></div>`;
   }
-  const inSet = (q) => !f.set || (f.set === "pyq26" ? q.set === "pyq26" : !q.builtin);
+  const inSet = (q) => (!f.set || (f.set === "mine" ? !q.builtin : q.set === f.set)) && (!f.year || q.year === +f.year);
   const SETQ = QBANK.filter(inSet);
   const chOpts = CHAPTERS.filter((c) => !f.sub || c.subject === f.sub).map((c) => {
     const n = SETQ.filter((q) => leafOf(q) && leafOf(q).ch.id === c.id).length;
@@ -285,17 +291,21 @@ function renderPractice() {
   }).join("") : "";
   const n = practiceList(f).length;
   const setPill = (v, label, cnt) => `<button class="btn ${f.set === v ? "primary" : ""}" data-pact="set" data-v="${v}">${label} <span class="badge">${cnt}</span></button>`;
-  const p26 = BUILTIN.filter((q) => state.quiz[q.id]);
+  const pyqQ = BUILTIN.filter((q) => q.set === "pyq");
+  const oosQ = BUILTIN.filter((q) => q.set === "oos");
+  const doneP = pyqQ.filter((q) => state.quiz[q.id]);
   return `${statusLine()}
   <div class="card" style="margin-bottom:14px">
     <h2>Practice Questions</h2>
     <div class="row">
-      ${setPill("pyq26", "📘 NIMCET PYQ 2026", BUILTIN.length)}
+      ${setPill("pyq", "📘 NIMCET PYQs", pyqQ.length)}
+      ${setPill("oos", "🚫 Out of syllabus", oosQ.length)}
       ${setPill("mine", "📁 Meri uploads", UPLOADS.length)}
       ${setPill("", "Sab", QBANK.length)}
     </div>
-    ${f.set === "pyq26" ? `<p class="meta" style="margin-top:8px">Asli NIMCET 2026 paper (6 June 2026) ke saare 120 questions — chapter / subtopic wise. Har answer dobara solve karke verify kiya gaya hai; jahan official key ya question me issue hai wahan ⚠ note dikhega. Attempted: ${p26.length}/120 · accuracy ${pct(p26.filter((q) => state.quiz[q.id].ok).length, p26.length)}%.</p>
-    <div class="row"><button class="btn" data-pact="fullPaper">⏱ Poora paper (120 Q, paper order)</button>${SUBJECTS.map((sx) => `<button class="btn small" data-pact="secPaper" data-sec="${sx.id}">${esc(SEC_SHORT[sx.id])} section</button>`).join("")}</div>` : ""}
+    ${f.set === "pyq" ? `<p class="meta" style="margin-top:8px">Asli NIMCET papers (${PYQ_YEARS.join(", ")}) — sirf revised 2026 syllabus wale questions, chapter / subtopic wise. Har answer dobara solve karke verify kiya gaya hai; jahan official key ya question me issue hai wahan ⚠ note dikhega. Attempted: ${doneP.length}/${pyqQ.length} · accuracy ${pct(doneP.filter((q) => state.quiz[q.id].ok).length, doneP.length)}%.</p>
+    ${PYQ_YEARS.map((y) => `<div class="row" style="margin-top:6px"><b>${y}:</b><button class="btn small" data-pact="fullPaper" data-year="${y}">⏱ Poora paper (paper order)</button>${SUBJECTS.map((sx) => `<button class="btn small" data-pact="secPaper" data-year="${y}" data-sec="${sx.id}">${esc(SEC_SHORT[sx.id])}</button>`).join("")}</div>`).join("")}` : ""}
+    ${f.set === "oos" ? `<p class="meta" style="margin-top:8px">Ye questions purane papers me aaye the par <b>revised 2026 syllabus me nahi</b> hain (Vectors, Normal/Poisson distribution, C programming, pipelining, compiler, microprogramming, I/O organisation). Sirf knowledge ke liye — galat hone pe Mistake log me nahi jaate. Exam prep ka time in pe mat lagao.</p>` : ""}
     ${f.set === "mine" && !UPLOADS.length ? `<p class="meta" style="margin-top:8px">Abhi koi upload nahi. ${bank.canWrite ? `<a href="#" data-pact="goAdmin">Admin</a> page pe image + sahi option upload karo.` : ""}</p>` : ""}
   </div>
   <div class="grid g4">
@@ -307,6 +317,7 @@ function renderPractice() {
   <div class="card" style="margin-top:14px">
     <h2>Questions chuno</h2>
     <div class="form">
+      ${f.set !== "mine" ? `<label class="f">Year<select data-pf="year"><option value="">Sab saal</option>${PYQ_YEARS.map((y) => `<option value="${y}" ${String(f.year) === String(y) ? "selected" : ""}>${y}</option>`).join("")}</select></label>` : ""}
       <label class="f">Subject<select data-pf="sub"><option value="">Sab subjects</option>${SUBJECTS.map((s) => { const k = SETQ.filter((q) => subjectOf(q) === s.id).length; return k ? `<option value="${s.id}" ${f.sub === s.id ? "selected" : ""}>${esc(s.name)} (${k})</option>` : ""; }).join("")}</select></label>
       <label class="f">Chapter<select data-pf="ch"><option value="">Sab chapters</option>${chOpts}</select></label>
       ${f.ch ? `<label class="f">Subtopic<select data-pf="leaf"><option value="">Sab subtopics</option>${leafOpts}</select></label>` : ""}
@@ -359,16 +370,17 @@ function renderSession() {
     ${res ? `<div class="qres ${res.ok ? "good" : "bad"}">
       <h2>${res.ok ? "✅ Sahi!" : "❌ Galat"}</h2>
       <p>Sahi answer: <b>${esc(q.ans)}</b>${!res.ok ? ` · Tumhara: <b>${esc(state.quiz[q.id].g || "—")}</b>` : ""} · Time: ${state.quiz[q.id].t} sec</p>
+      ${q.oos ? `<div class="warnbox" style="margin:8px 0">🚫 Out of syllabus (2026): ${esc(q.oos)} — sirf knowledge ke liye.</div>` : ""}
       ${q.flag ? `<div class="warnbox" style="margin:8px 0">⚠ ${esc(q.flag)}</div>` : ""}
       ${q.conc ? `<p><b>${q.builtin ? "Solution (key idea)" : "Concept / hint"}:</b> ${esc(q.conc)}</p>` : ""}
       ${q.trap && res.ok ? `<p class="meta"><b>Common trap:</b> ${esc(q.trap)}</p>` : ""}
       ${q.builtin && l ? `<p class="meta">Level: ${esc(DEPTH[q.d].label)} · ${esc(l.ch.name)} › ${esc(l.name)}</p>` : ""}
       ${res.diag ? `<p><b>Possible galti:</b></p><ul>${res.diag.lines.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
         ${l ? `<p><b>Ye revise karo:</b> <a href="#" data-act="openLeaf" data-leaf="${l.id}">${esc(l.ch.name)} › ${esc(l.topic)} › ${esc(l.name)}</a></p>` : ""}
-        <p class="meta">✓ Mistake log me save ho gaya — kal re-solve ke liye aayega. Asli reason choose karo:</p>
+        ${m ? `<p class="meta">✓ Mistake log me save ho gaya — kal re-solve ke liye aayega. Asli reason choose karo:</p>
         <div class="rate">${MISTAKE_TYPES.map((t) => `<button class="btn small ${m && m.type === t ? "primary" : ""}" data-pact="reason" data-t="${esc(t)}">${esc(t)}</button>`).join("")}</div>
         <label class="f" style="margin-top:8px">Kyu galat hua? (apne words me — Mistake log me jayega)<textarea id="qWhy" style="min-height:56px" placeholder="e.g. sign galat liya, formula me 2 bhool gaya">${esc(P.why)}</textarea></label>
-        <div class="row"><button class="btn small" data-pact="saveWhy">Save reason</button></div>` : ""}
+        <div class="row"><button class="btn small" data-pact="saveWhy">Save reason</button></div>` : ""}` : ""}
       <div class="row" style="margin-top:8px">
         <button class="btn primary" data-pact="next">Next →</button>
         <button class="btn" data-pact="claude">📋 Claude se samjho (prompt copy)</button>
@@ -552,8 +564,8 @@ document.addEventListener("click", async (e) => {
   switch (el.dataset.pact) {
     case "goAdmin": e.preventDefault(); go("admin"); break;
     case "set": P.f.set = el.dataset.v; P.f.ch = ""; P.f.leaf = ""; render(); break;
-    case "fullPaper": startSession(BUILTIN.map((x) => x.id)); break;
-    case "secPaper": startSession(BUILTIN.filter((x) => subjectOf(x) === el.dataset.sec).map((x) => x.id)); break;
+    case "fullPaper": startSession(BUILTIN.filter((x) => x.year === +(el.dataset.year || PYQ_YEARS[0])).map((x) => x.id)); break;
+    case "secPaper": startSession(BUILTIN.filter((x) => x.year === +(el.dataset.year || PYQ_YEARS[0]) && subjectOf(x) === el.dataset.sec).map((x) => x.id)); break;
     case "practiceLeaf": P.f = { ...P.f, set: "", sub: "", ch: "", leaf: "", st: "all" }; startSession(QBANK.filter((x) => x.leaf === el.dataset.leaf).map((x) => x.id)); break;
     case "goMistakes": go("mistakes"); break;
     case "start": startSession(practiceList(P.f)); break;
