@@ -57,7 +57,13 @@ function buildLeaves() {
   CHAPTERS.forEach((ch, ci) => {
     ch.topics.forEach((tp) => {
       tp.leaves.forEach((lf) => {
-        const [name, w, d, need, skip, tip] = lf;
+        const [name, w0, d0, need, skip, tip] = lf;
+        const id = `${ch.id}:${slug(name)}`;
+        // Blend the PYQ-trend estimate with the real NIMCET 2026 paper, and never
+        // keep the depth below the level that was actually asked.
+        const y26 = typeof PYQ_COUNTS !== "undefined" && PYQ_COUNTS[id] ? PYQ_COUNTS[id] : null;
+        const w = Math.round((0.6 * w0 + 0.4 * (y26 ? y26.n : 0)) * 10) / 10 || 0.1;
+        const d = Math.max(d0, y26 ? y26.d : 0);
         const r = RULES[ch.subject];
         const noNcert =
           ch.subject !== "M" ||
@@ -71,8 +77,8 @@ function buildLeaves() {
         const pracMin = r.pracMinPerQ || r.minPerQ;
         const mins = Math.round(learn + ncertMin * ncert + pracMin * prac + r.minPerQ * pyq);
         leaves.push({
-          id: `${ch.id}:${slug(name)}`,
-          ch, chIndex: ci, topic: tp.name, name, w, d, need, skip, tip: tip || "",
+          id,
+          ch, chIndex: ci, topic: tp.name, name, w, w0, d, d0, y26, need, skip, tip: tip || "",
           target: { ncert, prac, pyq },
           learn, mins, minPerQ: r.minPerQ, ncertMinPerQ: ncertMin, pracMinPerQ: pracMin,
         });

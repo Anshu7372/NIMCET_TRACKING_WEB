@@ -580,15 +580,18 @@ function leafDetail(l) {
   const qInput = (k, label, target) => target ? `<label class="f">${esc(label)} (target ${target})<input type="number" min="0" value="${p.qs[k] || 0}" data-act="leafQ" data-leaf="${l.id}" data-k="${k}"></label>` : "";
   return `<div class="leaf-detail">
     <dl class="kv">
-      <dt>Depth</dt><dd>${badgeDepth(l.d)} ${esc(DEPTH[l.d].text)}</dd>
+      <dt>Depth</dt><dd>${badgeDepth(l.d)} ${esc(DEPTH[l.d].text)}${l.d > l.d0 ? ` <b>(NIMCET 2026 me isi level pe poocha gaya — depth badhayi)</b>` : ""}</dd>
       <dt>NEED ✔</dt><dd>${esc(l.need)}</dd>
       <dt>SKIP ✘</dt><dd>${esc(l.skip || "Depth level se aage mat jao.")}</dd>
       ${l.tip ? `<dt>Trick ⚡</dt><dd>${esc(l.tip)}</dd>` : ""}
-      <dt>Weightage</dt><dd>~${l.w} Q/paper (PYQ-trend estimate, official nahi)</dd>
+      <dt>Weightage</dt><dd>~${l.w} Q/paper (PYQ-trend estimate ${l.w0} + asli NIMCET 2026 me ${l.y26 ? l.y26.n : 0} Q — blended)</dd>
       <dt>Targets</dt><dd>${l.target.ncert ? `NCERT ${l.target.ncert} · ` : ""}${esc(b.prac)} ${l.target.prac} · NIMCET PYQ ${l.target.pyq} · time ~${Math.round(l.mins)} min</dd>
       <dt>Think rule</dt><dd>${DEPTH[l.d].think} min socho → hint → ${DEPTH[l.d].think} min retry → solution → ⟳ re-solve list</dd>
       <dt>Resources</dt><dd>${esc(l.ch.ncert ? l.ch.ncert + " · " : "")}${esc(l.ch.obj)}</dd>
     </dl>
+    ${l.y26 ? `<div class="infobox" style="margin-top:10px"><b>NIMCET 2026 me ${l.y26.n} question:</b>
+      <ul style="margin:4px 0">${PYQ_2026.qs.filter((q) => q.leaf === l.id).map((q) => `<li><b>${esc(q.secName.split(" ")[0])} Q${q.paperQ}</b> (${esc(DEPTH[q.d].short)}) — ${esc(q.key)}</li>`).join("")}</ul>
+      <button class="btn small primary" data-pact="practiceLeaf" data-leaf="${l.id}">▶ Ye questions practice karo</button></div>` : ""}
     <div class="form" style="margin-top:10px">
       ${qInput("ncert", "NCERT solved", l.target.ncert)}
       ${qInput("prac", b.prac + " solved", l.target.prac)}
@@ -608,6 +611,33 @@ function leafDetail(l) {
   </div>`;
 }
 
+function pyq26Analysis() {
+  const qs = PYQ_2026.qs;
+  const rows = SUBJECTS.map((s) => {
+    const chs = CHAPTERS.filter((c) => c.subject === s.id).map((c) => {
+      const x = qs.filter((q) => LEAF[q.leaf].ch === c);
+      return { c, n: x.length, d: [1, 2, 3].map((k) => x.filter((q) => q.d === k).length) };
+    }).filter((r) => r.n).sort((a, b) => b.n - a.n);
+    return `<tr><td colspan="3" style="color:${s.color}"><b>${esc(s.name)}</b> — ${qs.filter((q) => q.sec === s.id).length} Q</td></tr>` +
+      chs.map((r) => `<tr><td>${esc(r.c.name)}</td><td><b>${r.n}</b></td><td class="meta">D1 ${r.d[0]} · D2 ${r.d[1]} · D3 ${r.d[2]}</td></tr>`).join("");
+  }).join("");
+  const lv = [1, 2, 3].map((k) => qs.filter((q) => q.d === k).length);
+  return `<details class="chapter" ${ui.openCh.has("pyq26") ? "open" : ""} data-ch="pyq26">
+    <summary><span class="name">📊 NIMCET 2026 paper analysis (asli paper, 120 Q, answers verified)</span><span class="badge">D1 ${lv[0]} · D2 ${lv[1]} · D3 ${lv[2]}</span></summary>
+    <div class="body">
+      <ul>
+        <li><b>Maths:</b> Sets + Logic + Relations + Functions sabse zyada (9), fir Calculus (8) aur Trigonometry (8). P&C/Binomial sirf 1. Zyada tar questions D1–D2 (direct formula + 1 trick); D3 sirf ~7.</li>
+        <li><b>Naya syllabus dikh raha hai:</b> Mathematical logic (truth table), symmetric difference, moments/kurtosis, Rolle-type/IVT ideas; Computer me Software + Internet + Email se 9 Q.</li>
+        <li><b>Reasoning:</b> Numerical reasoning (ratio, averages, %, alligation, SI) 13 Q — calculation speed sabse important. Puzzles/seating 6, critical reasoning + syllogism 8.</li>
+        <li><b>English:</b> SVA, tense sequence, phrasal verbs, collocations, phrase types, 2 RC.</li>
+        <li>Is analysis se har subtopic ka weightage (estimate + 2026 count) aur depth (2026 ka level) update ho chuka hai — subtopics pe <span class="badge" style="color:var(--bad)">2026: nQ</span> badge dekho.</li>
+      </ul>
+      <div class="scroll-x"><table><tr><th>Chapter</th><th>Qs</th><th>Level</th></tr>${rows}</table></div>
+      <p class="meta">Q107 (Computer Q17) ki official key galat lagti hai — practice me verified answer use hota hai. Q44, Q62, Q74 (Maths Q44, Reasoning Q12, Q24) me question/key doubtful hai, practice me ⚠ note dikhega.</p>
+      <div class="row"><button class="btn small primary" data-pact="fullPaper">▶ Poora 2026 paper practice karo</button></div>
+    </div></details>`;
+}
+
 function renderSyllabus() {
   const f = ui.synFilter;
   const t = totals();
@@ -625,6 +655,7 @@ function renderSyllabus() {
     <div class="grid g4" style="margin-top:10px">${SUBJECTS.map((s) => `<div class="meta"><b style="color:${s.color}">${esc(s.name)}</b><br>${s.qs} Qs × ${s.plus} (−${s.minus}) · ${t[s.id].leaves} subtopics · ~${Math.round(t[s.id].mins / 60)} h · ${t[s.id].qs} practice Qs</div>`).join("")}</div>
   </div>`;
 
+  html += pyq26Analysis();
   for (const s of SUBJECTS) {
     if (f.sub && f.sub !== s.id) continue;
     let chHtml = "";
@@ -641,7 +672,10 @@ function renderSyllabus() {
       const done = all.reduce((x, l) => x + Math.min(l.mins, (state.progress[l.id] || {}).mins || 0), 0);
       const tot = all.reduce((x, l) => x + l.mins, 0);
       const open = ui.openCh.has(ch.id) || f.q || f.tough || f.status;
-      let body = `<div class="meta"><b>Resources:</b> ${esc(ch.ncert ? ch.ncert + " · " : "")}${esc(ch.obj)}</div>
+      const y26ch = PYQ_2026.qs.filter((q) => LEAF[q.leaf] && LEAF[q.leaf].ch === ch);
+      let body = `${ch.ncertMap ? `<div class="scroll-x" style="margin-bottom:8px"><table><tr><th>Topic</th><th>NCERT book & chapter</th><th>Edition</th></tr>${ch.ncertMap.map(([t, ref, ed]) => `<tr><td>${esc(t)}</td><td>${esc(ref)}</td><td><span class="badge" style="color:${ed.startsWith("New") ? "var(--good)" : ed.startsWith("Old") ? "var(--warn)" : "var(--muted)"}">${esc(ed)}</span></td></tr>`).join("")}</table></div>` : ""}
+        ${y26ch.length ? `<div class="meta"><b>NIMCET 2026:</b> ${y26ch.length} questions (D1 ${y26ch.filter((q) => q.d === 1).length} · D2 ${y26ch.filter((q) => q.d === 2).length} · D3 ${y26ch.filter((q) => q.d === 3).length})</div>` : ""}
+        <div class="meta"><b>Resources:</b> ${esc(ch.obj)}</div>
         ${ch.prereq.length ? `<div class="meta"><b>Pehle ye aana chahiye:</b> ${ch.prereq.map(esc).join(" · ")}</div>` : ""}
         <div class="meta"><b>Speed tricks:</b><ul style="margin:2px 0">${ch.speed.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
       let lastTopic = "";
@@ -653,7 +687,7 @@ function renderSyllabus() {
           <div class="leaf-head" data-act="toggleLeaf" data-leaf="${l.id}">
             <span class="dot ${st}"></span>
             <span class="nm">${esc(l.name)}</span>
-            ${badgeW(l.w)} ${badgeDepth(l.d)}
+            ${l.y26 ? `<span class="badge" style="color:var(--bad)" title="NIMCET 2026 me ${l.y26.n} question">2026: ${l.y26.n}Q</span>` : ""} ${badgeW(l.w)} ${badgeDepth(l.d)}
             <button class="star ${p.tough ? "on" : ""}" data-act="toggleTough" data-leaf="${l.id}" title="Mark tough">★</button>
           </div>
           <div class="bar" style="margin:6px 0 0 18px;height:4px"><span style="width:${pct(p.mins || 0, l.mins)}%;background:${s.color}"></span></div>
@@ -661,7 +695,7 @@ function renderSyllabus() {
         </div>`;
       }
       chHtml += `<details class="chapter" data-ch="${ch.id}" ${open ? "open" : ""}>
-        <summary><span class="name">${esc(ch.id)} · ${esc(ch.name)}</span><span class="badge w">~${w.toFixed(1)} Q</span><span class="badge">${pct(done, tot)}%</span></summary>
+        <summary><span class="name">${esc(ch.id)} · ${esc(ch.name)}</span>${y26ch.length ? `<span class="badge" style="color:var(--bad)">2026: ${y26ch.length}Q</span>` : ""}<span class="badge w">~${w.toFixed(1)} Q</span><span class="badge">${pct(done, tot)}%</span></summary>
         <div class="body">${body}</div></details>`;
     }
     if (chHtml) html += `<h2 style="margin:18px 0 8px;color:${s.color}">${esc(s.name)}</h2>${chHtml}`;

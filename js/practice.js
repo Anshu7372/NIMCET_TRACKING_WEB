@@ -78,10 +78,21 @@ let bank = localBank;
 let bankReady = false;
 let bankError = "";
 
+// Built-in NIMCET PYQ bank (actual 2026 paper, answers verified) — ships with the app.
+const SEC_SHORT = { M: "Maths", R: "Reasoning", C: "Computer", E: "English" };
+const BUILTIN = (typeof PYQ_2026 !== "undefined" ? PYQ_2026.qs : []).map((q) => ({
+  id: "n26-" + q.n, leaf: q.leaf, ans: q.ans, conc: q.key, trap: q.trap, flag: q.flag, off: q.off, d: q.d,
+  src: `NIMCET 2026 · ${SEC_SHORT[q.sec]} Q${q.paperQ}`, img: `pyq/2026/q${q.n}.webp`, builtin: true, set: "pyq26", at: q.n,
+}));
+let UPLOADS = [];
+
 function indexBank(list) {
-  QBANK = list.filter((q) => q && q.id && OPTS.includes(q.ans)).sort((a, b) => (a.at || 0) - (b.at || 0));
+  UPLOADS = list.filter((q) => q && q.id && OPTS.includes(q.ans) && !q.builtin).sort((a, b) => (a.at || 0) - (b.at || 0));
+  QBANK = [...BUILTIN, ...UPLOADS];
   QBYID = Object.fromEntries(QBANK.map((q) => [q.id, q]));
 }
+const qImg = (q) => (q.builtin ? q.img : bank.imgUrl(q));
+indexBank([]);
 
 async function initBank() {
   // Prefer the account-backed bank on claude.ai.
@@ -138,7 +149,7 @@ async function compressImage(file) {
 }
 
 /* ---------------- practice engine ---------------- */
-ui.pq = { f: { sub: "", ch: "", leaf: "", st: "new", src: "", order: "added" }, list: null, idx: 0, given: "", guess: false, res: null, t0: 0, done: [], why: "" };
+ui.pq = { f: { set: "pyq26", sub: "", ch: "", leaf: "", st: "new", src: "", order: "added" }, list: null, idx: 0, given: "", guess: false, res: null, t0: 0, done: [], why: "" };
 ui.adm = { leaf: "", src: "", items: [], key: "", saving: false, editing: null, filter: "" };
 
 const leafOf = (q) => LEAF[q.leaf];
@@ -147,6 +158,8 @@ const subjectOf = (q) => (leafOf(q) ? leafOf(q).ch.subject : "M");
 function practiceList(f) {
   let list = QBANK.filter((q) => {
     const l = leafOf(q);
+    if (f.set === "pyq26" && q.set !== "pyq26") return false;
+    if (f.set === "mine" && q.builtin) return false;
     if (f.sub && (!l || l.ch.subject !== f.sub)) return false;
     if (f.ch && (!l || l.ch.id !== f.ch)) return false;
     if (f.leaf && q.leaf !== f.leaf) return false;
@@ -254,22 +267,37 @@ function renderPractice() {
   const att = QBANK.filter((q) => state.quiz[q.id]).length;
   const cor = QBANK.filter((q) => state.quiz[q.id] && state.quiz[q.id].ok).length;
   const wrong = att - cor;
-  if (bankReady && !QBANK.length) {
+  if (bankReady && !QBANK.length && false) {
     return `${statusLine()}<div class="card"><h2>Practice Questions</h2>
       <p>Abhi koi question upload nahi hua. ${bank.canWrite ? `<a href="#" data-pact="goAdmin">Admin</a> page pe question ka image + sahi option upload karo — yahan apne aap aa jayega.` : "Owner ke upload karne ke baad questions yahan dikhenge."}</p>
       <ul class="clean meta"><li>✔ Subject / chapter / subtopic / source se filter</li><li>✔ Option chuno → page khud check karega, timer ke saath</li>
       <li>✔ Galat hua → kyu hua (possible galti) + kya revise karna hai</li><li>✔ Galat question apne aap Mistake log me → 1-3-7-21 din pe dobara solve</li></ul></div>`;
   }
+  const inSet = (q) => !f.set || (f.set === "pyq26" ? q.set === "pyq26" : !q.builtin);
+  const SETQ = QBANK.filter(inSet);
   const chOpts = CHAPTERS.filter((c) => !f.sub || c.subject === f.sub).map((c) => {
-    const n = QBANK.filter((q) => leafOf(q) && leafOf(q).ch.id === c.id).length;
+    const n = SETQ.filter((q) => leafOf(q) && leafOf(q).ch.id === c.id).length;
     return n ? `<option value="${c.id}" ${f.ch === c.id ? "selected" : ""}>${esc(c.name)} (${n})</option>` : "";
   }).join("");
   const leafOpts = f.ch ? LEAVES.filter((l) => l.ch.id === f.ch).map((l) => {
-    const n = QBANK.filter((q) => q.leaf === l.id).length;
+    const n = SETQ.filter((q) => q.leaf === l.id).length;
     return n ? `<option value="${l.id}" ${f.leaf === l.id ? "selected" : ""}>${esc(l.name)} (${n})</option>` : "";
   }).join("") : "";
   const n = practiceList(f).length;
+  const setPill = (v, label, cnt) => `<button class="btn ${f.set === v ? "primary" : ""}" data-pact="set" data-v="${v}">${label} <span class="badge">${cnt}</span></button>`;
+  const p26 = BUILTIN.filter((q) => state.quiz[q.id]);
   return `${statusLine()}
+  <div class="card" style="margin-bottom:14px">
+    <h2>Practice Questions</h2>
+    <div class="row">
+      ${setPill("pyq26", "📘 NIMCET PYQ 2026", BUILTIN.length)}
+      ${setPill("mine", "📁 Meri uploads", UPLOADS.length)}
+      ${setPill("", "Sab", QBANK.length)}
+    </div>
+    ${f.set === "pyq26" ? `<p class="meta" style="margin-top:8px">Asli NIMCET 2026 paper (6 June 2026) ke saare 120 questions — chapter / subtopic wise. Har answer dobara solve karke verify kiya gaya hai; jahan official key ya question me issue hai wahan ⚠ note dikhega. Attempted: ${p26.length}/120 · accuracy ${pct(p26.filter((q) => state.quiz[q.id].ok).length, p26.length)}%.</p>
+    <div class="row"><button class="btn" data-pact="fullPaper">⏱ Poora paper (120 Q, paper order)</button>${SUBJECTS.map((sx) => `<button class="btn small" data-pact="secPaper" data-sec="${sx.id}">${esc(SEC_SHORT[sx.id])} section</button>`).join("")}</div>` : ""}
+    ${f.set === "mine" && !UPLOADS.length ? `<p class="meta" style="margin-top:8px">Abhi koi upload nahi. ${bank.canWrite ? `<a href="#" data-pact="goAdmin">Admin</a> page pe image + sahi option upload karo.` : ""}</p>` : ""}
+  </div>
   <div class="grid g4">
     <div class="card stat"><span class="l">Attempted</span><span class="v">${att}/${QBANK.length}</span></div>
     <div class="card stat"><span class="l">Accuracy</span><span class="v">${pct(cor, att)}%</span></div>
@@ -279,12 +307,12 @@ function renderPractice() {
   <div class="card" style="margin-top:14px">
     <h2>Questions chuno</h2>
     <div class="form">
-      <label class="f">Subject<select data-pf="sub"><option value="">Sab subjects</option>${SUBJECTS.map((s) => { const k = QBANK.filter((q) => subjectOf(q) === s.id).length; return k ? `<option value="${s.id}" ${f.sub === s.id ? "selected" : ""}>${esc(s.name)} (${k})</option>` : ""; }).join("")}</select></label>
+      <label class="f">Subject<select data-pf="sub"><option value="">Sab subjects</option>${SUBJECTS.map((s) => { const k = SETQ.filter((q) => subjectOf(q) === s.id).length; return k ? `<option value="${s.id}" ${f.sub === s.id ? "selected" : ""}>${esc(s.name)} (${k})</option>` : ""; }).join("")}</select></label>
       <label class="f">Chapter<select data-pf="ch"><option value="">Sab chapters</option>${chOpts}</select></label>
       ${f.ch ? `<label class="f">Subtopic<select data-pf="leaf"><option value="">Sab subtopics</option>${leafOpts}</select></label>` : ""}
       <label class="f">Kaunse<select data-pf="st">${[["new", "Naye (attempt nahi kiye)"], ["wrong", "Galat wale (retry)"], ["all", "Sab"], ["bm", "Bookmarked"]].map(([v, t]) => `<option value="${v}" ${f.st === v ? "selected" : ""}>${t}</option>`).join("")}</select></label>
       <label class="f">Source contains<input data-pf="src" value="${esc(f.src)}" placeholder="e.g. NIMCET 2023 / JEE 2024"></label>
-      <label class="f">Order<select data-pf="order"><option value="added" ${f.order === "added" ? "selected" : ""}>Upload order</option><option value="shuffle" ${f.order === "shuffle" ? "selected" : ""}>Shuffle</option></select></label>
+      <label class="f">Order<select data-pf="order"><option value="added" ${f.order === "added" ? "selected" : ""}>Paper / upload order</option><option value="shuffle" ${f.order === "shuffle" ? "selected" : ""}>Shuffle</option></select></label>
     </div>
     <div class="row" style="margin-top:10px">
       <button class="btn primary" data-pact="start" ${n ? "" : "disabled"}>▶ Start (${n} questions)</button>
@@ -308,7 +336,7 @@ function renderSession() {
   const l = leafOf(q);
   const res = P.res;
   const prev = state.quiz[q.id];
-  const img = bank.imgUrl(q);
+  const img = qImg(q);
   const m = state.mistakes.find((x) => x.id === "q-" + q.id);
   const opts = OPTS.map((o) => {
     const chosen = P.given === o;
@@ -331,7 +359,10 @@ function renderSession() {
     ${res ? `<div class="qres ${res.ok ? "good" : "bad"}">
       <h2>${res.ok ? "✅ Sahi!" : "❌ Galat"}</h2>
       <p>Sahi answer: <b>${esc(q.ans)}</b>${!res.ok ? ` · Tumhara: <b>${esc(state.quiz[q.id].g || "—")}</b>` : ""} · Time: ${state.quiz[q.id].t} sec</p>
-      ${q.conc ? `<p><b>Concept / hint:</b> ${esc(q.conc)}</p>` : ""}
+      ${q.flag ? `<div class="warnbox" style="margin:8px 0">⚠ ${esc(q.flag)}</div>` : ""}
+      ${q.conc ? `<p><b>${q.builtin ? "Solution (key idea)" : "Concept / hint"}:</b> ${esc(q.conc)}</p>` : ""}
+      ${q.trap && res.ok ? `<p class="meta"><b>Common trap:</b> ${esc(q.trap)}</p>` : ""}
+      ${q.builtin && l ? `<p class="meta">Level: ${esc(DEPTH[q.d].label)} · ${esc(l.ch.name)} › ${esc(l.name)}</p>` : ""}
       ${res.diag ? `<p><b>Possible galti:</b></p><ul>${res.diag.lines.map((x) => `<li>${esc(x)}</li>`).join("")}</ul>
         ${l ? `<p><b>Ye revise karo:</b> <a href="#" data-act="openLeaf" data-leaf="${l.id}">${esc(l.ch.name)} › ${esc(l.topic)} › ${esc(l.name)}</a></p>` : ""}
         <p class="meta">✓ Mistake log me save ho gaya — kal re-solve ke liye aayega. Asli reason choose karo:</p>
@@ -367,7 +398,7 @@ function renderAdmin() {
           <label class="f">Correct<select data-ait="${i}" data-k="ans"><option value="">—</option>${OPTS.map((o) => `<option ${it.ans === o ? "selected" : ""}>${o}</option>`).join("")}</select></label>
           <button class="btn small ghost" data-pact="dropItem" data-i="${i}">✕</button></div>
       </div></div>`).join("");
-  const list = QBANK.filter((q) => !A.filter || (q.src || "").toLowerCase().includes(A.filter.toLowerCase()) || (leafOf(q) && leafOf(q).name.toLowerCase().includes(A.filter.toLowerCase()))).slice().reverse();
+  const list = UPLOADS.filter((q) => !A.filter || (q.src || "").toLowerCase().includes(A.filter.toLowerCase()) || (leafOf(q) && leafOf(q).name.toLowerCase().includes(A.filter.toLowerCase()))).slice().reverse();
   const edit = A.editing ? QBYID[A.editing] : null;
   return `${statusLine()}
   <div class="card">
@@ -408,7 +439,7 @@ function renderAdmin() {
     <div class="row"><button class="btn primary" data-pact="saveEdit">Save changes</button><button class="btn" data-pact="cancelEdit">Cancel</button></div></div>` : ""}
 
   <div class="card">
-    <div class="row between"><h3>Uploaded questions (${QBANK.length})</h3><input id="aFilter" value="${esc(A.filter)}" placeholder="Search source / subtopic" style="max-width:240px"></div>
+    <div class="row between"><h3>Uploaded questions (${UPLOADS.length}) <span class="meta">— NIMCET 2026 ke 120 PYQs built-in hain, unhe yaha edit nahi karna</span></h3><input id="aFilter" value="${esc(A.filter)}" placeholder="Search source / subtopic" style="max-width:240px"></div>
     <div class="scroll-x"><table><tr><th>Image</th><th>Subtopic</th><th>Source</th><th>Ans</th><th>Attempts</th><th></th></tr>
     ${list.slice(0, 200).map((q) => { const a = state.quiz[q.id]; return `<tr>
       <td><img class="thumb" src="${esc(bank.imgUrl(q))}" alt="" loading="lazy"></td>
@@ -461,7 +492,7 @@ async function saveItems() {
     for (const it of A.items) {
       const q = { id: uid() + uid(), leaf: A.leaf, src: it.src.trim(), ans: it.ans, conc, trap, at: Date.now() + saved };
       await bank.add(q, it.blob);
-      if (bank.kind === "local") { QBANK.push(q); QBYID[q.id] = q; }
+      if (bank.kind === "local") indexBank([...UPLOADS, q]);
       saved++;
     }
     A.src = nextSrc(A.items[A.items.length - 1].src);
@@ -476,7 +507,7 @@ async function saveItems() {
 
 async function exportBank() {
   const out = [];
-  for (const q of QBANK) {
+  for (const q of UPLOADS) {
     let img = bank.imgUrl(q);
     if (img && !img.startsWith("data:")) { try { img = await blobToDataUrl(await (await fetch(img)).blob()); } catch (e) { img = ""; } }
     out.push({ ...q, imgId: undefined, img });
@@ -499,7 +530,7 @@ async function importBank(file) {
       if (!OPTS.includes(x.ans) || typeof x.img !== "string" || !x.img.startsWith("data:image/") || QBYID[x.id]) continue;
       const q = { id: String(x.id).replace(/[^\w-]/g, "").slice(0, 40) || uid() + uid(), leaf: LEAF[x.leaf] ? x.leaf : "", src: String(x.src || "").slice(0, 120), ans: x.ans, conc: String(x.conc || "").slice(0, 1000), trap: String(x.trap || "").slice(0, 1000), at: +x.at || Date.now() };
       await bank.add(q, await dataUrlToBlob(x.img));
-      if (bank.kind === "local") { QBANK.push(q); QBYID[q.id] = q; }
+      if (bank.kind === "local") indexBank([...UPLOADS, q]);
       n++;
     }
     toast(`✓ ${n} questions imported`);
@@ -520,6 +551,10 @@ document.addEventListener("click", async (e) => {
   const q = P.list ? QBYID[P.list[P.idx]] : null;
   switch (el.dataset.pact) {
     case "goAdmin": e.preventDefault(); go("admin"); break;
+    case "set": P.f.set = el.dataset.v; P.f.ch = ""; P.f.leaf = ""; render(); break;
+    case "fullPaper": startSession(BUILTIN.map((x) => x.id)); break;
+    case "secPaper": startSession(BUILTIN.filter((x) => subjectOf(x) === el.dataset.sec).map((x) => x.id)); break;
+    case "practiceLeaf": P.f = { ...P.f, set: "", sub: "", ch: "", leaf: "", st: "all" }; startSession(QBANK.filter((x) => x.leaf === el.dataset.leaf).map((x) => x.id)); break;
     case "goMistakes": go("mistakes"); break;
     case "start": startSession(practiceList(P.f)); break;
     case "retryAll": startSession(QBANK.filter((x) => state.quiz[x.id] && !state.quiz[x.id].ok).map((x) => x.id)); break;
@@ -569,7 +604,7 @@ document.addEventListener("click", async (e) => {
       if (!x) break;
       try {
         await bank.remove(x);
-        if (bank.kind === "local") indexBank(QBANK.filter((y) => y.id !== x.id));
+        if (bank.kind === "local") indexBank(UPLOADS.filter((y) => y.id !== x.id));
         toast("Deleted"); render();
       } catch (err) { toast("Delete fail hua"); }
       break;
