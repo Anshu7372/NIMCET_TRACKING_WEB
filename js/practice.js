@@ -283,7 +283,7 @@ function renderPractice() {
       <label class="f">Chapter<select data-pf="ch"><option value="">Sab chapters</option>${chOpts}</select></label>
       ${f.ch ? `<label class="f">Subtopic<select data-pf="leaf"><option value="">Sab subtopics</option>${leafOpts}</select></label>` : ""}
       <label class="f">Kaunse<select data-pf="st">${[["new", "Naye (attempt nahi kiye)"], ["wrong", "Galat wale (retry)"], ["all", "Sab"], ["bm", "Bookmarked"]].map(([v, t]) => `<option value="${v}" ${f.st === v ? "selected" : ""}>${t}</option>`).join("")}</select></label>
-      <label class="f">Source contains<input data-pf="src" value="${esc(f.src)}" placeholder="e.g. 2023 / RD Sharma"></label>
+      <label class="f">Source contains<input data-pf="src" value="${esc(f.src)}" placeholder="e.g. NIMCET 2023 / JEE 2024"></label>
       <label class="f">Order<select data-pf="order"><option value="added" ${f.order === "added" ? "selected" : ""}>Upload order</option><option value="shuffle" ${f.order === "shuffle" ? "selected" : ""}>Shuffle</option></select></label>
     </div>
     <div class="row" style="margin-top:10px">

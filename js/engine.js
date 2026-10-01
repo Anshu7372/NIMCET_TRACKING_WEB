@@ -34,16 +34,19 @@ function slug(s) {
   return s.toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "").slice(0, 48);
 }
 
-// Subtopics that NCERT does not cover — their NCERT share moves to the objective book.
-const NO_NCERT_TOPICS = ["Logarithms", "Pair of Straight Lines"];
+// Subtopics the current NCERT does not cover — learn them from lecture/Claude
+// and move their NCERT share to JEE Main PYQs.
+const NO_NCERT_TOPICS = ["Logarithms", "Pair of Straight Lines", "Mathematical Logic"];
 const NO_NCERT_LEAVES = [
-  "Characteristic", "Common roots", "Location of roots", "Arithmetico", "Method of differences",
+  "Characteristic", "Common roots", "Location of roots",
   "Rank of a word", "Derangements", "Special matrices", "Rank of a matrix",
-  "Sine rule", "Half-angle formulas",
+  "Sine rule", "Half-angle formulas", "Intermediate Value", "Moments",
 ];
 
 const RULES = {
-  M: { learn: [25, 40, 55], ncert: [6, 10, 12], prac: (w, d) => Math.round(8 + 40 * w) + (d === 3 ? 5 : 0), minPerQ: 2.5, ncertMinPerQ: 3.5 },
+  // Maths: NCERT exercises → JEE Main PYQs (prac) → NIMCET PYQs.
+  M: { learn: [25, 40, 55], ncert: [6, 10, 12], prac: (w, d) => Math.round(8 + 35 * w) + (d === 3 ? 5 : 0), minPerQ: 2.5, pracMinPerQ: 3, ncertMinPerQ: 3.5 },
+  // Other subjects: lecture → test-series topic tests (prac) → NIMCET PYQs.
   R: { learn: [25, 35, 45], ncert: [0, 0, 0], prac: (w) => Math.round(10 + 25 * w), minPerQ: 1.5 },
   C: { learn: [30, 40, 50], ncert: [0, 0, 0], prac: (w) => Math.round(10 + 30 * w), minPerQ: 2 },
   E: { learn: [20, 20, 20], ncert: [0, 0, 0], prac: (w) => Math.round(10 + 20 * w), minPerQ: 1.5 },
@@ -65,12 +68,13 @@ function buildLeaves() {
         const pyq = Math.max(3, Math.round(12 * w));
         const learn = r.learn[d - 1];
         const ncertMin = r.ncertMinPerQ || r.minPerQ;
-        const mins = Math.round(learn + ncertMin * ncert + r.minPerQ * (prac + pyq));
+        const pracMin = r.pracMinPerQ || r.minPerQ;
+        const mins = Math.round(learn + ncertMin * ncert + pracMin * prac + r.minPerQ * pyq);
         leaves.push({
           id: `${ch.id}:${slug(name)}`,
           ch, chIndex: ci, topic: tp.name, name, w, d, need, skip, tip: tip || "",
           target: { ncert, prac, pyq },
-          learn, mins, minPerQ: r.minPerQ, ncertMinPerQ: ncertMin,
+          learn, mins, minPerQ: r.minPerQ, ncertMinPerQ: ncertMin, pracMinPerQ: pracMin,
         });
       });
     });
@@ -83,18 +87,16 @@ const LEAF = Object.fromEntries(LEAVES.map((l) => [l.id, l]));
 
 function bookNames(leaf) {
   const s = leaf.ch.subject;
-  if (s === "M") return { ncert: "NCERT", prac: "RD Sharma Objective", pyq: "NIMCET PYQs" };
-  if (s === "R") return { ncert: "", prac: leaf.ch.id === "R06" || leaf.ch.id === "R07" ? "R.S. Aggarwal QA" : "R.S. Aggarwal VR", pyq: "NIMCET PYQs" };
-  if (s === "C") return { ncert: "", prac: "Practice set (Claude / Mano)", pyq: "NIMCET PYQs" };
-  return { ncert: "", prac: "Practice (WPME / Wren & Martin / RC)", pyq: "NIMCET PYQs" };
+  if (s === "M") return { ncert: "NCERT exercise", prac: "JEE Main PYQs", pyq: "NIMCET PYQs" };
+  return { ncert: "", prac: "Test series topic test", pyq: "NIMCET PYQs" };
 }
 
 /* Segments of a leaf in minutes: learn → NCERT → objective book → PYQ. */
 function leafSegments(leaf) {
   const b = bookNames(leaf);
-  const segs = [{ kind: "learn", mins: leaf.learn, q: 0, label: "Concept (Claude prompt + examples)" }];
+  const segs = [{ kind: "learn", mins: leaf.learn, q: 0, label: leaf.ch.subject === "M" && leaf.target.ncert ? "NCERT lecture + concept (Claude prompt for doubts)" : "Lecture / concept (Claude prompt)" }];
   if (leaf.target.ncert) segs.push({ kind: "ncert", mins: leaf.target.ncert * leaf.ncertMinPerQ, q: leaf.target.ncert, label: b.ncert });
-  segs.push({ kind: "prac", mins: leaf.target.prac * leaf.minPerQ, q: leaf.target.prac, label: b.prac });
+  segs.push({ kind: "prac", mins: leaf.target.prac * leaf.pracMinPerQ, q: leaf.target.prac, label: b.prac });
   segs.push({ kind: "pyq", mins: leaf.target.pyq * leaf.minPerQ, q: leaf.target.pyq, label: b.pyq });
   return segs;
 }
@@ -296,7 +298,7 @@ function simulate(state, from, days) {
       if (isLastSundayOfMonth(date) && completedAny) {
         day.kind = "Monthly revision test";
         day.blocks.push(
-          { title: "Monthly test (timed)", mins: 60, note: "Is mahine ke chapters se 30 mixed Qs (PYQ + RD Sharma level), timer ke saath." },
+          { title: "Monthly test (timed)", mins: 60, note: "Is mahine ke chapters se 30 mixed Qs (JEE Main + NIMCET PYQ level), timer ke saath." },
           { title: "Test analysis", mins: 30, note: "Har galat Q → Mistakes tab. Weak subtopics ko ★ tough mark karo." },
           { title: "Weekly spaced revision backlog", mins: budget.rev + 10, note: "Due list clear karo + mistake log." },
         );

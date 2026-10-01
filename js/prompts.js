@@ -38,7 +38,7 @@ Chunk ke baad hi next chunk.
 - TRAPS: 3–5 common galtiyan jo students karte hain.
 - SHORTCUTS: tricks + kab use NAHI karni.
 - SPEED: is topic me question fast kaise solve karu (option elimination, special values, pattern).
-- PRACTICE LADDER: 5 PYQ-style MCQs (easy → hard), ek-ek karke. Har question ke saath mera think time (D1: 2 min, D2: 5 min, D3: 8 min). Pehle HINT, solution tabhi jab main maangu.
+- PRACTICE LADDER: 5 NIMCET/JEE Main PYQ-style MCQs (easy → hard), ek-ek karke. Har question ke saath mera think time (D1: 2 min, D2: 5 min, D3: 8 min). Pehle HINT, solution tabhi jab main maangu.
 - FORMULA CARD: 5–8 line ka summary jo main apni formula sheet me copy karunga.
 - LEARNING PROFILE UPDATE: mere jawab, galtiyaan aur speed dekh ke 2–3 line likho — main kis tarah jaldi samajhta hu, kaha atakta hu, next time kaise padhana chahiye. Main ise tracker me save karunga aur next session me wapas dunga.
 
@@ -65,7 +65,8 @@ function subtopicPrompt(leaf, p, profile, mistakes) {
 - Subtopic: ${leaf.name}
 - Depth: ${dep.label} — ${dep.text}
 - Estimated NIMCET weightage: ~${leaf.w} question(s) per paper (PYQ trend estimate)
-- Learning time budget: ${leaf.learn} min (iske baad main practice karunga: ${leaf.target.ncert ? leaf.target.ncert + " NCERT, " : ""}${leaf.target.prac} ${bookNames(leaf).prac}, ${leaf.target.pyq} PYQs)
+- Learning time budget: ${leaf.learn} min (iske baad main practice karunga: ${leaf.target.ncert ? leaf.target.ncert + " NCERT exercise, " : ""}${leaf.target.prac} ${bookNames(leaf).prac}, ${leaf.target.pyq} NIMCET PYQs)
+- Syllabus: ${SYLLABUS_VERSION}. Mere resources sirf NCERT lecture, JEE Main PYQs, NIMCET PYQs aur test series hain — koi aur book suggest mat karna.
 
 ## NEED (sab cover karna hai)
 ${leaf.need}

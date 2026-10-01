@@ -45,6 +45,18 @@ function loadState() {
 
 let state = loadState();
 
+// Bump when the syllabus/resources change: unticked saved day plans are rebuilt
+// so they show the current syllabus and resources.
+const DATA_V = 2;
+function migrateData() {
+  if (state.dataV === DATA_V) return;
+  for (const [d, day] of Object.entries(state.days)) {
+    if (!Object.values(day.checks || {}).some(Boolean)) delete state.days[d];
+  }
+  state.dataV = DATA_V;
+}
+migrateData();
+
 // Old day snapshots are only needed for the streak; keep the saved state small.
 function pruneDays() {
   const cutoff = addDays(todayStr(), -21);
@@ -326,7 +338,7 @@ function itemHtml(date, bi, ii, item, checked) {
         <div><b>${esc(l.name)}</b> ${badgeDepth(l.d)} ${badgeW(l.w)}</div>
         <div class="meta">${esc(l.ch.name)} → ${esc(l.topic)}</div>
         <ul>${item.steps.map((s) => `<li>${esc(s.text)}</li>`).join("")}</ul>
-        <div class="meta">Think rule: <b>${think} min</b> socho → hint → retry → solution → re-solve list · Book: ${esc(l.ch.subject === "M" ? l.ch.ncert : l.ch.obj)}</div>
+        <div class="meta">Think rule: <b>${think} min</b> socho → hint → retry → solution → re-solve list · Resources: ${esc(l.ch.subject === "M" && l.target.ncert ? l.ch.ncert : l.ch.obj)}</div>
         <div class="row" style="margin-top:6px">
           ${item.steps.some((s) => s.kind === "learn") ? `<button class="btn small primary" data-act="copyLeafPrompt" data-leaf="${l.id}">📋 Claude teach prompt</button>` : ""}
           <button class="btn small" data-act="openLeaf" data-leaf="${l.id}">Details</button>
@@ -397,7 +409,7 @@ function renderToday() {
       <h3>👋 Day 1 setup (10 min, sirf ek baar)</h3>
       <ol class="steps">
         <li>claude.ai pe Project banao "NIMCET Rank 1" → <a href="#" data-act="copyMaster">Master prompt copy karo</a> → Project instructions me paste.</li>
-        <li>Books ready: NCERT 11 & 12 Maths, RD Sharma Objective Mathematics, R.S. Aggarwal (Reasoning + QA), NIMCET PYQs.</li>
+        <li>Resources ready: NCERT 11 & 12 Maths (lecture + exercises), JEE Main PYQs (topic-wise), NIMCET PYQs, ek NIMCET test series.</li>
         <li>Settings me exam dates check karo. Guide tab 2 min me padh lo.</li>
         <li>Neeche ke plan se shuru karo — pehla task "Concept" hai → "📋 Claude teach prompt".</li>
       </ol></div>` : "";
@@ -508,7 +520,7 @@ function renderPlan() {
       <table>
         <tr><th>Block</th><th>Time</th><th>Kya</th></tr>
         <tr><td>🍅 P1</td><td>${b.speed}+${b.rev} min</td><td>Speed drill + spaced revision (due list, 1 tough, mistakes)</td></tr>
-        <tr><td>🍅 P2 + P3</td><td>${b.maths} min</td><td>Maths new: concept → NCERT → RD Sharma Obj → PYQ</td></tr>
+        <tr><td>🍅 P2 + P3</td><td>${b.maths} min</td><td>Maths new: NCERT lecture → NCERT exercise → JEE Main PYQs → NIMCET PYQs</td></tr>
         <tr><td>🍅 P4</td><td>${b.sec} min</td><td>Mon/Wed/Fri Reasoning · Tue/Thu Computer · Sat English</td></tr>
         <tr><td>End</td><td>${b.recap} min</td><td>Blurting recap + tracker update</td></tr>
         <tr><td>Breaks</td><td>${b.breaks} min</td><td>5 min har pomodoro ke baad (phone nahi, paani + walk)</td></tr>
@@ -559,14 +571,14 @@ function leafDetail(l) {
       <dt>SKIP ✘</dt><dd>${esc(l.skip || "Depth level se aage mat jao.")}</dd>
       ${l.tip ? `<dt>Trick ⚡</dt><dd>${esc(l.tip)}</dd>` : ""}
       <dt>Weightage</dt><dd>~${l.w} Q/paper (PYQ-trend estimate, official nahi)</dd>
-      <dt>Targets</dt><dd>${l.target.ncert ? `NCERT ${l.target.ncert} · ` : ""}${esc(b.prac)} ${l.target.prac} · PYQ ${l.target.pyq} · time ~${Math.round(l.mins)} min</dd>
+      <dt>Targets</dt><dd>${l.target.ncert ? `NCERT ${l.target.ncert} · ` : ""}${esc(b.prac)} ${l.target.prac} · NIMCET PYQ ${l.target.pyq} · time ~${Math.round(l.mins)} min</dd>
       <dt>Think rule</dt><dd>${DEPTH[l.d].think} min socho → hint → ${DEPTH[l.d].think} min retry → solution → ⟳ re-solve list</dd>
-      <dt>Books</dt><dd>${esc(l.ch.ncert ? l.ch.ncert + " · " : "")}${esc(l.ch.obj)}</dd>
+      <dt>Resources</dt><dd>${esc(l.ch.ncert ? l.ch.ncert + " · " : "")}${esc(l.ch.obj)}</dd>
     </dl>
     <div class="form" style="margin-top:10px">
       ${qInput("ncert", "NCERT solved", l.target.ncert)}
       ${qInput("prac", b.prac + " solved", l.target.prac)}
-      ${qInput("pyq", "PYQs solved", l.target.pyq)}
+      ${qInput("pyq", "NIMCET PYQs solved", l.target.pyq)}
       <label class="f">Confidence (1–5)<select data-act="leafConf" data-leaf="${l.id}">${[0, 1, 2, 3, 4, 5].map((c) => `<option value="${c}" ${p.conf === c ? "selected" : ""}>${c || "—"}</option>`).join("")}</select></label>
       <label class="f">Status<select data-act="leafStatus" data-leaf="${l.id}">
         ${[["", "Auto (" + st + ")"], ["todo", "Not started"], ["doing", "In progress"], ["done", "Completed"], ["mastered", "Mastered"]].map(([v, t]) => `<option value="${v}" ${(p.status || "") === v ? "selected" : ""}>${t}</option>`).join("")}
@@ -587,7 +599,7 @@ function renderSyllabus() {
   const t = totals();
   let html = `<div class="card">
     <h2>Full syllabus — chapter → topic → subtopic</h2>
-    <p class="meta">Har subtopic pe: depth (D1/D2/D3), NEED/SKIP, estimated weightage, question targets (NCERT / RD Sharma Objective / PYQ), think-time rule, tricks. ★ = tough (revision me baar-baar aayega). Weightage PYQ trends se estimate hai — official NIMCET notification se syllabus ek baar zaroor match karo.</p>
+    <p class="meta">Har subtopic pe: depth (D1/D2/D3), NEED/SKIP, estimated weightage, question targets (NCERT / JEE Main PYQ / NIMCET PYQ), think-time rule, tricks. ★ = tough (revision me baar-baar aayega). Weightage PYQ trends se estimate hai — official NIMCET notification se syllabus ek baar zaroor match karo.</p>
     <div class="row">
       <select data-act="synSub"><option value="">All subjects</option>${SUBJECTS.map((s) => `<option value="${s.id}" ${f.sub === s.id ? "selected" : ""}>${esc(s.name)}</option>`).join("")}</select>
       <select data-act="synStatus"><option value="">Any status</option>${[["todo", "Not started"], ["doing", "In progress"], ["done", "Completed"], ["mastered", "Mastered"]].map(([v, n]) => `<option value="${v}" ${f.status === v ? "selected" : ""}>${n}</option>`).join("")}</select>
@@ -615,7 +627,7 @@ function renderSyllabus() {
       const done = all.reduce((x, l) => x + Math.min(l.mins, (state.progress[l.id] || {}).mins || 0), 0);
       const tot = all.reduce((x, l) => x + l.mins, 0);
       const open = ui.openCh.has(ch.id) || f.q || f.tough || f.status;
-      let body = `<div class="meta"><b>Books:</b> ${esc(ch.ncert ? ch.ncert + " · " : "")}${esc(ch.obj)}</div>
+      let body = `<div class="meta"><b>Resources:</b> ${esc(ch.ncert ? ch.ncert + " · " : "")}${esc(ch.obj)}</div>
         ${ch.prereq.length ? `<div class="meta"><b>Pehle ye aana chahiye:</b> ${ch.prereq.map(esc).join(" · ")}</div>` : ""}
         <div class="meta"><b>Speed tricks:</b><ul style="margin:2px 0">${ch.speed.map((x) => `<li>${esc(x)}</li>`).join("")}</ul></div>`;
       let lastTopic = "";
@@ -930,14 +942,16 @@ function renderGuide() {
     <p class="meta">Planning tracker karta hai. Tum sirf padhai karo. Miss hua din → plan khud adjust.</p>
   </div>
   <div class="card">
-    <h2>Book order har subtopic me</h2>
+    <h2>Resource order har subtopic me</h2>
+    <p class="meta">Sirf ye resources: <b>NCERT lecture + exercises</b>, <b>JEE Main PYQs</b>, <b>NIMCET PYQs</b>, <b>test series</b>. Koi extra book nahi.</p>
     <ol class="steps">
-      <li><b>Concept</b> — Claude teach prompt (interactive, visual) + NCERT examples.</li>
+      <li><b>NCERT lecture</b> — concept (doubt ho to "📋 Claude teach prompt"). Jo topic NCERT me nahi (logic, logs, pair of lines, properties of triangles) wo lecture/Claude se.</li>
       <li><b>NCERT exercise</b> — us subtopic ke relevant questions (count task me likha hai). Base pakka.</li>
-      <li><b>RD Sharma Objective</b> — MCQ practice, NIMCET level. Pehle easy, fir harder.</li>
-      <li><b>NIMCET PYQs (topic-wise)</b> — purane saal (2019 aur pehle). ${MOCK_PLAN.reservedPyqYears.join(", ")} ke papers Phase 2 ke full-length tests ke liye bacha ke rakho.</li>
+      <li><b>JEE Main PYQs</b> — topic-wise, MCQ level practice. Sirf NIMCET syllabus wale subtopics.</li>
+      <li><b>NIMCET PYQs (topic-wise)</b> — purane saal. ${MOCK_PLAN.reservedPyqYears.join(", ")} ke papers Phase 2 ke full-length tests ke liye bacha ke rakho.</li>
+      <li><b>Test series</b> — Reasoning / Computer / English ke topic tests, aur Phase 3 me full mocks.</li>
     </ol>
-    <p class="meta">Reasoning: R.S. Aggarwal (Verbal & Non-Verbal + Quantitative Aptitude). Computer: Claude notes + Morris Mano Digital Design (Ch 1–4 selected). English: Word Power Made Easy + Wren & Martin (selected) + PYQ RCs.</p>
+    <p class="meta">Syllabus: ${esc(SYLLABUS_VERSION)}.</p>
   </div>
   <div class="card">
     <h2>Depth levels</h2>
@@ -952,7 +966,7 @@ function renderGuide() {
   </div>
   <div class="card warnbox">
     <h3>Honest note</h3>
-    <p>100% marks ki guarantee koi plan nahi de sakta — exam day pe paper, nerves aur competition bhi matter karte hain. Ye plan tumhe rank 1 ke <b>level ki preparation</b> tak le jaane ke liye bana hai: poora syllabus sahi depth pe, ~8000 practice Qs, spaced revision, 6 PYQ papers + 30 mocks. Weightage numbers PYQ trends se estimate hain, official nahi. Har saal official notification (nimcet.admissions.nic.in) se syllabus aur exam date check karo aur Settings me dates update karo.</p>
+    <p>100% marks ki guarantee koi plan nahi de sakta — exam day pe paper, nerves aur competition bhi matter karte hain. Ye plan tumhe rank 1 ke <b>level ki preparation</b> tak le jaane ke liye bana hai: revised 2026 syllabus sahi depth pe, ~${Object.values(t).reduce((x, y) => x + y.qs, 0)} practice Qs (NCERT + JEE Main PYQ + NIMCET PYQ + test series), spaced revision, 6 PYQ papers + 30 mocks. Weightage numbers PYQ trends se estimate hain, official nahi. Har saal official notification (nimcet.admissions.nic.in) se syllabus aur exam date check karo aur Settings me dates update karo.</p>
   </div>`;
 }
 

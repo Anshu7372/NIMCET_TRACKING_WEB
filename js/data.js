@@ -1,6 +1,8 @@
 /*
  * NIMCET syllabus data.
  *
+ * Follows the revised NIMCET syllabus (w.e.f. 2026).
+ *
  * Structure: SUBJECT -> CHAPTER -> TOPIC -> SUBTOPIC (leaf).
  * Leaf tuple: [name, w, d, need, skip, tip]
  *   w    = estimated questions per paper (from PYQ trends, NOT official)
@@ -33,15 +35,17 @@ const DEPTH = {
   },
 };
 
+// Only these resources are used: NCERT lectures + exercises, JEE Main PYQs,
+// NIMCET PYQs and test-series mocks / topic tests.
 const BOOKS = {
-  ncert: "NCERT",
-  obj: "RD Sharma Objective Mathematics",
-  rsaVR: "R.S. Aggarwal – A Modern Approach to Verbal & Non-Verbal Reasoning",
-  rsaQA: "R.S. Aggarwal – Quantitative Aptitude",
-  comp: "Claude notes + M. Morris Mano – Digital Design (Ch 1–4 selected)",
-  eng: "Word Power Made Easy (vocab) + Wren & Martin (selected grammar)",
+  ncert: "NCERT (lecture + exercises)",
+  jee: "JEE Main PYQs (topic-wise)",
   pyq: "NIMCET PYQs (topic-wise, older years)",
+  ts: "Test series (topic / sectional tests + full mocks)",
 };
+
+// Revised NIMCET syllabus, with effect from 2026.
+const SYLLABUS_VERSION = "NIMCET revised syllabus (w.e.f. 2026)";
 
 const SUBJECTS = [
   { id: "M", name: "Mathematics", qs: 50, plus: 12, minus: 3, time: 70, color: "#4f7cff" },
@@ -54,9 +58,9 @@ const SUBJECTS = [
 const CHAPTERS = [
   /* ============================ MATHEMATICS ============================ */
   {
-    id: "M01", subject: "M", name: "Sets, Relations & Functions",
-    ncert: "NCERT 11 Ch 1 (Sets), 11 Ch 2 + 12 Ch 1 (Relations & Functions)",
-    obj: "RD Sharma Objective: Sets; Relations; Functions",
+    id: "M01", subject: "M", name: "Set Theory, Logic, Relations & Functions",
+    ncert: "NCERT 11 Ch 1 (Sets), 11 Ch 2 + 12 Ch 1 (Relations & Functions); Logic: old NCERT 11 Ch 14 (Mathematical Reasoning)",
+    obj: "JEE Main PYQs: Sets, Relations & Functions, Mathematical Reasoning",
     prereq: ["Number line & intervals notation [a,b), (a,∞)", "Basic inequalities solving", "Graphs of y=x, x², |x|, 1/x, √x"],
     speed: [
       "Venn diagram hamesha draw karo — 3-set questions me regions (a,b,c,d,e,f,g) likh ke solve karo.",
@@ -69,13 +73,23 @@ const CHAPTERS = [
           "Roster/set-builder, empty/finite/infinite, subset count 2ⁿ, proper subsets 2ⁿ−1, power set.",
           "Axiomatic set theory, Russell paradox, proofs.",
           "n elements → subsets 2ⁿ, non-empty proper 2ⁿ−2."],
-        ["Set operations, Venn diagrams & n(A∪B∪C)", 0.6, 2,
-          "Union, intersection, difference, complement, De Morgan laws, n(A∪B), n(A∪B∪C), 'only one / exactly two / none' word problems.",
+        ["Set operations, symmetric difference, Venn diagrams & n(A∪B∪C)", 0.7, 2,
+          "Union, intersection, difference, symmetric difference A△B = (A−B)∪(B−A), complement, De Morgan laws, n(A∪B), n(A∪B∪C), 'only one / exactly two / none' word problems.",
           "Formal proofs of set identities.",
           "'Exactly two' = Σn(A∩B) − 3n(A∩B∩C). Regions method > formula."],
-        ["Cartesian product", 0.2, 1,
-          "A×B, n(A×B)=n(A)·n(B), ordered pairs, A×B ≠ B×A.",
+        ["Cartesian product & cardinality", 0.3, 1,
+          "A×B, n(A×B)=n(A)·n(B), ordered pairs, A×B ≠ B×A, cardinality of finite sets, power set, A△B.",
           "Cartesian product of 3+ sets proofs.", ""],
+      ]},
+      { name: "Mathematical Logic", leaves: [
+        ["Statements, connectives & truth tables", 0.8, 2,
+          "Statement vs non-statement, negation, ∧, ∨, →, ↔, truth tables, converse / inverse / contrapositive, negation of compound statements.",
+          "Predicate logic, quantifier proofs, formal proof systems.",
+          "p→q ≡ ~p ∨ q; contrapositive ~q→~p ≡ original."],
+        ["Tautology, contradiction & logical equivalence", 0.7, 2,
+          "Check tautology/contradiction (truth table or shortcut), standard equivalences (De Morgan, distributive, absorption), duality.",
+          "Normal forms beyond basics, logic circuits theory.",
+          "Tautology check: try to make it FALSE — impossible ⇒ tautology."],
       ]},
       { name: "Relations", leaves: [
         ["Types of relations (reflexive, symmetric, transitive, equivalence)", 0.6, 2,
@@ -87,7 +101,7 @@ const CHAPTERS = [
           "Counting transitive relations (no formula exists).",
           "Reflexive & symmetric both = 2^(n(n−1)/2)."],
       ]},
-      { name: "Functions", leaves: [
+      { name: "Functions on real numbers", leaves: [
         ["Domain & range", 0.6, 3,
           "Domain of rational, root, log, inverse-trig combos; range by y=f(x) → x in terms of y, by completing square, by min/max.",
           "Range of very complicated composite functions via calculus proofs.",
@@ -109,7 +123,7 @@ const CHAPTERS = [
   {
     id: "M02", subject: "M", name: "Algebra Basics: Indices, Logarithms, Equations & Quadratics",
     ncert: "NCERT 10 Ch 4 (Quadratic Eq), 11 Ch 4 (Quadratic part), 11 Ch 5 (Inequalities); Logs: not in NCERT",
-    obj: "RD Sharma Objective: Quadratic Equations & Expressions; Logarithms (use RD Sharma Class 11 for logs if needed)",
+    obj: "JEE Main PYQs: Quadratic Equations; Logarithm/Exponential based questions",
     prereq: ["Algebraic identities (a±b)², (a±b)³, a³±b³", "Factorisation by splitting middle term", "Log values: log2=0.3010, log3=0.4771, log5=0.6990, log7=0.8451"],
     speed: [
       "Quadratic me pehle discriminant ka sign socho — aadhe questions wahi se solve.",
@@ -118,7 +132,7 @@ const CHAPTERS = [
     ],
     topics: [
       { name: "Indices & Surds", leaves: [
-        ["Laws of indices & exponential equations", 0.3, 1,
+        ["Laws of indices, exponentials & exponential equations", 0.4, 1,
           "aᵐ·aⁿ, (aᵐ)ⁿ, a⁰, negative/fractional powers, same-base equations.",
           "Irrational exponent theory.", "Base same karo, powers equate karo."],
         ["Surds & rationalisation", 0.2, 1,
@@ -168,7 +182,7 @@ const CHAPTERS = [
           "Both roots > k, < k, k between roots (a·f(k) < 0), ax²+bx+c > 0 ∀x ⇔ a>0, D<0; min/max value −D/4a.",
           "Roots in interval with 3+ conditions for higher degree.",
           "k beech me ⇒ sirf a·f(k) < 0 check karo."],
-        ["Linear, quadratic & modulus inequalities", 0.4, 2,
+        ["Linear, quadratic & modulus inequalities (for domain / roots)", 0.2, 1,
           "Wavy curve (sign scheme) method, |x−a| < b, |x−a| > b, rational inequalities.",
           "Inequalities with 3+ modulus terms nested.",
           "Wavy curve: critical points line pe, rightmost + se start, even power pe sign same."],
@@ -178,7 +192,7 @@ const CHAPTERS = [
   {
     id: "M03", subject: "M", name: "Sequences & Series",
     ncert: "NCERT 10 Ch 5 (AP), 11 Ch 8 (Sequences & Series)",
-    obj: "RD Sharma Objective: Arithmetic Progressions; Geometric Progressions; Harmonic Progressions; Special Series",
+    obj: "JEE Main PYQs: Sequences & Series",
     prereq: ["Sum formulas Σn, Σn², Σn³", "Basic algebra manipulation"],
     speed: [
       "3 terms AP me: a−d, a, a+d lo; GP me: a/r, a, ar — calculation aadha.",
@@ -208,24 +222,17 @@ const CHAPTERS = [
           "Weighted power mean inequality, Cauchy–Schwarz deep use.",
           "Product fixed ⇒ sum minimum when all equal."],
       ]},
-      { name: "Special Series", leaves: [
-        ["Σn, Σn², Σn³ based series", 0.4, 2,
-          "Sum of series whose nth term is polynomial in n; 1²+3²+5²…, 1·2+2·3+… .",
-          "Bernoulli numbers.", "Tₙ nikalo, fir Σ lagao."],
-        ["Arithmetico-geometric series (AGP)", 0.3, 2,
-          "Sₙ and S∞ using S − rS method.",
-          "", "S∞ of AGP = a/(1−r) + dr/(1−r)²."],
-        ["Method of differences & telescoping", 0.4, 3,
-          "Differences in AP/GP ⇒ find Tₙ; 1/(n(n+1)) type telescoping; partial fractions in series.",
-          "Higher order difference tables beyond 2nd order.",
-          "1/(n(n+1)) = 1/n − 1/(n+1) — cancel ho jata hai."],
+      { name: "Finite Sums of Powers of Natural Numbers", leaves: [
+        ["Σn, Σn², Σn³ and series built from them", 0.7, 2,
+          "Σn, Σn², Σn³ formulas; sum of series whose nth term is a polynomial in n (1²+3²+5²…, 1·2+2·3+…); simple telescoping like 1/(n(n+1)).",
+          "Bernoulli numbers, AGP, higher-order difference methods (not in revised syllabus).", "Tₙ nikalo, fir Σ lagao. Σn³ = (Σn)²."],
       ]},
     ],
   },
   {
     id: "M04", subject: "M", name: "Permutations, Combinations & Binomial Theorem",
     ncert: "NCERT 11 Ch 6 (P&C), 11 Ch 7 (Binomial Theorem)",
-    obj: "RD Sharma Objective: Permutations & Combinations; Binomial Theorem",
+    obj: "JEE Main PYQs: Permutations & Combinations; Binomial Theorem",
     prereq: ["Factorials till 10! yaad (10! = 3628800)", "ⁿCᵣ = ⁿCₙ₋ᵣ, Pascal rule", "Powers of 2 till 2¹⁰"],
     speed: [
       "Pehle decide: ORDER matter karta hai? Haan → P, Nahi → C. Ye 1 question 50% galtiyaan rokta hai.",
@@ -283,7 +290,7 @@ const CHAPTERS = [
   {
     id: "M05", subject: "M", name: "Probability",
     ncert: "NCERT 11 Ch 14, 12 Ch 13 (Probability)",
-    obj: "RD Sharma Objective: Probability",
+    obj: "JEE Main PYQs: Probability",
     prereq: ["P&C chapter complete (MUST)", "Fractions fast simplification", "Cards (52), dice (36 outcomes), coins (2ⁿ) sample spaces yaad"],
     speed: [
       "Complement use karo: P(at least one) = 1 − P(none).",
@@ -292,7 +299,7 @@ const CHAPTERS = [
     ],
     topics: [
       { name: "Basic Probability", leaves: [
-        ["Sample space & classical probability", 0.8, 2,
+        ["Sample space & classical probability", 1.0, 2,
           "Coins, dice, cards, balls-in-bag, arrangement-based probability using P&C.",
           "Axiomatic σ-algebra theory.", "Favourable/Total — dono ko same type (ordered/unordered) me count karo."],
         ["Addition rule, complement & mutually exclusive events", 0.5, 2,
@@ -300,33 +307,22 @@ const CHAPTERS = [
           "", "Odds a:b ⇒ P = a/(a+b)."],
       ]},
       { name: "Conditional Probability", leaves: [
-        ["Conditional probability & multiplication rule", 0.6, 3,
+        ["Conditional probability & multiplication rule", 0.7, 3,
           "P(A|B) = P(A∩B)/P(B), successive draws without replacement, reduced sample space trick.",
           "Measure-theoretic conditioning.", "Reduced sample space: given B ⇒ total = n(B)."],
         ["Independent events", 0.5, 2,
           "P(A∩B)=P(A)P(B), independent vs mutually exclusive difference, problems like 'target hit by at least one'.",
           "Pairwise vs mutual independence proofs.", ""],
-        ["Total probability & Bayes' theorem", 0.6, 3,
+        ["Total probability & Bayes' theorem", 0.8, 3,
           "Partition, total probability, Bayes for 2–3 urns/machines/diagnostic test problems.",
           "Continuous Bayes.", "Bayes = (is branch ka product)/(sab branches ka sum)."],
-      ]},
-      { name: "Random Variables & Distributions", leaves: [
-        ["Random variable, probability distribution, mean & variance", 0.3, 2,
-          "Discrete distribution table, ΣP=1, E(X), Var(X)=E(X²)−(E(X))².",
-          "Continuous distributions, pdf integration.", ""],
-        ["Binomial distribution", 0.5, 2,
-          "P(X=r) = ⁿCᵣ pʳ qⁿ⁻ʳ, mean np, variance npq, at least/at most, find n,p from mean & variance.",
-          "Poisson/normal approximations.", "Mean/variance diya ⇒ q = var/mean."],
-        ["Geometric & miscellaneous probability", 0.2, 2,
-          "Probability with lengths/areas (simple), games where players toss alternately (infinite GP).",
-          "", "A first toss wins: p/(1−q²) type — infinite GP."],
       ]},
     ],
   },
   {
     id: "M06", subject: "M", name: "Matrices & Determinants",
     ncert: "NCERT 12 Ch 3 (Matrices), 12 Ch 4 (Determinants)",
-    obj: "RD Sharma Objective: Matrices; Determinants; Adjoint & Inverse; Simultaneous Linear Equations",
+    obj: "JEE Main PYQs: Matrices & Determinants",
     prereq: ["2×2 and 3×3 determinant expansion fast", "Linear equations (M02)"],
     speed: [
       "Property-based questions: kabhi expand mat karo pehle — row/column operations se zeros banao.",
@@ -372,7 +368,7 @@ const CHAPTERS = [
   {
     id: "M07", subject: "M", name: "Trigonometry",
     ncert: "NCERT 10 Ch 8–9, 11 Ch 3 (Trig Functions), 12 Ch 2 (Inverse Trig); Properties of triangles: not in NCERT",
-    obj: "RD Sharma Objective: Trigonometric Ratios & Identities; Trigonometric Equations; Inverse Trigonometric Functions; Properties of Triangles; Heights & Distances",
+    obj: "JEE Main PYQs: Trigonometric Equations; Inverse Trigonometric Functions; Properties of Triangles; Heights & Distances",
     prereq: ["Trig table 0°, 30°, 45°, 60°, 90° + ASTC rule", "Allied angles (90°±θ, 180°±θ)", "Values: sin15°, cos15°, sin18°, cos36°, tan22.5°"],
     speed: [
       "Identity questions: θ = 0, 30°, 45° daal ke options check — sabse fast.",
@@ -403,10 +399,10 @@ const CHAPTERS = [
           "Transcendental trig equations.", "Interval me solutions count ke liye graph sketch karo."],
       ]},
       { name: "Inverse Trigonometric Functions", leaves: [
-        ["Domain, range & principal values", 0.3, 2,
+        ["Domain, range & principal values", 0.5, 2,
           "Principal value branches of all six, sin⁻¹(sin x) for x outside range.",
           "", "sin⁻¹(sin x): x ko [−π/2, π/2] me laao."],
-        ["Inverse trig identities & equations", 0.4, 3,
+        ["Inverse trig identities (basic simplification)", 0.2, 1,
           "tan⁻¹x + tan⁻¹y, sin⁻¹x + cos⁻¹x = π/2, 2tan⁻¹x forms, simplification by substitution (x = tanθ).",
           "Series of inverse trig with telescoping of 20+ terms (basic telescoping ok).",
           "√(1−x²) dikhe ⇒ x = sinθ ya cosθ substitute."],
@@ -427,7 +423,7 @@ const CHAPTERS = [
   {
     id: "M08", subject: "M", name: "Coordinate Geometry",
     ncert: "NCERT 10 Ch 7, 11 Ch 9 (Straight Lines), 11 Ch 10 (Conic Sections); Pair of lines: not in NCERT",
-    obj: "RD Sharma Objective: Cartesian Coordinates; Straight Lines; Pair of Straight Lines; Circle; Parabola; Ellipse; Hyperbola",
+    obj: "JEE Main PYQs: Straight Lines; Circle; Conic Sections (Parabola, Ellipse, Hyperbola)",
     prereq: ["Distance & section formula", "Slope basics, tanθ values", "Completing the square (for circle/conic centre)"],
     speed: [
       "Rough diagram HAMESHA — 60% options diagram se eliminate ho jaate hain.",
@@ -478,28 +474,28 @@ const CHAPTERS = [
         ["Parabola: standard forms, focus, directrix, latus rectum", 0.6, 2,
           "4 standard forms, vertex shifted parabola, LR = 4a, focal distance = x + a.",
           "", "Focal chord ends t₁t₂ = −1."],
-        ["Parabola: tangent, normal & parametric form", 0.3, 3,
+        ["Parabola: tangent, normal & parametric form", 0.5, 3,
           "Tangent y = mx + a/m, parametric (at², 2at), normal at t.",
           "Co-normal points deep, chord of contact advanced.", ""],
         ["Ellipse: standard form, eccentricity, foci, LR", 0.6, 2,
           "b² = a²(1−e²), foci (±ae,0), directrix x = ±a/e, LR = 2b²/a, sum of focal distances = 2a.",
           "", "Sum of focal distances = 2a (major axis)."],
-        ["Ellipse: tangent & auxiliary circle", 0.2, 2,
-          "Tangent y = mx ± √(a²m²+b²), parametric (a cosθ, b sinθ).",
+        ["Ellipse: tangent, normal & parametric form", 0.4, 2,
+          "Tangent y = mx ± √(a²m²+b²), tangent & normal at a point, parametric (a cosθ, b sinθ).",
           "Conjugate diameters.", ""],
         ["Hyperbola: standard form, e, asymptotes, rectangular hyperbola", 0.6, 2,
           "b² = a²(e²−1), asymptotes y = ±(b/a)x, conjugate hyperbola e relation 1/e₁² + 1/e₂² = 1, xy = c².",
           "", "Rectangular hyperbola e = √2."],
-        ["Hyperbola: tangent", 0.1, 2,
-          "Condition c² = a²m² − b², tangent at point.",
+        ["Hyperbola: tangent & normal", 0.3, 2,
+          "Condition c² = a²m² − b², tangent & normal at a point, parametric (a secθ, b tanθ).",
           "", ""],
       ]},
     ],
   },
   {
     id: "M09", subject: "M", name: "Calculus",
-    ncert: "NCERT 11 Ch 12, 12 Ch 5–9 (Continuity, AOD, Integrals, Area, Diff. Eq.)",
-    obj: "RD Sharma Objective: Limits; Continuity & Differentiability; Differentiation; Tangents & Normals; Monotonicity; Maxima & Minima; Indefinite Integrals; Definite Integrals; Area; Differential Equations",
+    ncert: "NCERT 11 Ch 12, 12 Ch 5–8 (Continuity, AOD, Integrals, Area)",
+    obj: "JEE Main PYQs: Limits; Continuity & Differentiability; Application of Derivatives; Indefinite & Definite Integrals; Area",
     prereq: ["Functions & graphs (M01)", "Trig identities (M07)", "Standard derivative & integral tables yaad", "Straight lines (M08)"],
     speed: [
       "Standard limits card: sinx/x, (eˣ−1)/x, (aˣ−1)/x, ln(1+x)/x, (1+x)^(1/x) → e.",
@@ -523,6 +519,9 @@ const CHAPTERS = [
         ["Continuity & differentiability", 0.6, 3,
           "LHL=RHL=f(a), find k for continuity, LHD vs RHD, points of non-differentiability of |f(x)|, [x], max/min functions.",
           "Uniform continuity, pathological functions.", "|x−a| ka corner = non-differentiable point; count graph se."],
+        ["Intermediate Value Theorem (applications)", 0.3, 2,
+          "Statement of IVT, showing a root exists in an interval (sign change), number of roots using IVT + monotonicity.",
+          "Proofs, uniform continuity.", "f(a)·f(b) < 0 aur f continuous ⇒ (a, b) me root zaroor."],
       ]},
       { name: "Differentiation", leaves: [
         ["Rules: chain, implicit, parametric & logarithmic differentiation", 0.7, 2,
@@ -542,8 +541,8 @@ const CHAPTERS = [
         ["Maxima & minima", 0.7, 3,
           "First & second derivative tests, global max/min in closed interval, word problems (area/volume/distance).",
           "Lagrange multipliers.", "Closed interval: critical points + end points dono check."],
-        ["Rate of change, Rolle's & Mean Value Theorem", 0.2, 1,
-          "dA/dt type chain rule, Rolle's/LMVT conditions and finding c.",
+        ["Rolle's theorem & Mean Value Theorem (applications)", 0.5, 2,
+          "Conditions of Rolle's & LMVT, finding c, checking which function satisfies the theorem, simple inequality/root applications, rate of change.",
           "Proofs of theorems.", ""],
       ]},
       { name: "Integration", leaves: [
@@ -564,64 +563,12 @@ const CHAPTERS = [
           "Area between curve and axis, between two curves (parabola–line, circle), area using symmetry.",
           "Area in polar coordinates.", "Sketch + intersection points pehle; standard: y² = 4ax & x² = 4ay area = 16a²/3."],
       ]},
-      { name: "Differential Equations", leaves: [
-        ["Order, degree & variable separable", 0.3, 2,
-          "Order/degree (polynomial in derivatives), formation by eliminating constants, variable separable, linear first order (IF).",
-          "Exact equations, higher order linear ODEs.", "Degree tab hi define jab derivatives polynomial me hon."],
-      ]},
-    ],
-  },
-  {
-    id: "M10", subject: "M", name: "Vectors & 3D Geometry",
-    ncert: "NCERT 12 Ch 10 (Vector Algebra), 11 Ch 11 + 12 Ch 11 (3D Geometry)",
-    obj: "RD Sharma Objective: Vectors; Scalar Product; Vector Product; Scalar Triple Product; Direction Cosines; Straight Line in Space; The Plane",
-    prereq: ["Coordinate geometry basics", "3×3 determinants (M06)", "Trig values"],
-    speed: [
-      "Dot = cos wala, Cross = sin wala — angle/area questions turant pehchaano.",
-      "Coplanar ⇔ [a b c] = 0 — determinant se 30 sec.",
-      "Projection of a on b = (a·b)/|b|.",
-    ],
-    topics: [
-      { name: "Vector Algebra", leaves: [
-        ["Vector basics, position vector & section formula", 0.4, 1,
-          "Addition, unit vector, collinearity, section formula, direction cosines of vector.",
-          "", ""],
-        ["Scalar (dot) product & projection", 0.8, 2,
-          "a·b = |a||b|cosθ, angle, perpendicular condition, projection, |a+b|² expansions.",
-          "", "|a+b| = |a−b| ⇒ a ⊥ b."],
-        ["Vector (cross) product & area", 0.7, 2,
-          "a×b, |a×b| = area of parallelogram, triangle area ½|AB×AC|, unit vector ⊥ to both.",
-          "", "Area of triangle = ½|AB × AC|."],
-        ["Scalar triple product, volume & coplanarity", 0.6, 2,
-          "[a b c] as determinant, volume of parallelepiped/tetrahedron (1/6), coplanarity.",
-          "", "Tetrahedron volume = (1/6)|[a b c]|."],
-        ["Vector triple product", 0.2, 2,
-          "a×(b×c) = (a·c)b − (a·b)c.",
-          "Reciprocal vectors.", "BAC–CAB rule."],
-        ["Applications in mechanics (work, moment)", 0.3, 1,
-          "Work = F·d, moment/torque = r×F.",
-          "", ""],
-      ]},
-      { name: "3D Geometry", leaves: [
-        ["Direction cosines & ratios", 0.5, 2,
-          "l²+m²+n² = 1, DRs from two points, angle between lines, projection of segment.",
-          "", ""],
-        ["Line in 3D", 0.4, 2,
-          "Vector & Cartesian form, angle between lines, shortest distance between skew lines, point on line.",
-          "Line-plane family advanced.", "SD = |(b−a)·(d₁×d₂)|/|d₁×d₂|."],
-        ["Plane", 0.4, 2,
-          "Normal form, intercept form, plane through 3 points, distance of point from plane, angle between planes.",
-          "", "Distance formula same as 2D line wala structure."],
-        ["Angle & distance between line and plane", 0.2, 2,
-          "sinθ = |n·b|/(|n||b|), line parallel/lying in plane conditions.",
-          "", ""],
-      ]},
     ],
   },
   {
     id: "M11", subject: "M", name: "Statistics",
     ncert: "NCERT 11 Ch 13 (Statistics), Class 10 Ch 13–14 (mean/median/mode of grouped data)",
-    obj: "RD Sharma Objective: Measures of Central Tendency; Measures of Dispersion",
+    obj: "JEE Main PYQs: Statistics",
     prereq: ["Fast arithmetic & fractions", "Σ notation"],
     speed: [
       "Change of origin → mean shifts, SD same. Change of scale ×k → mean ×k, SD ×|k|.",
@@ -646,35 +593,13 @@ const CHAPTERS = [
         ["Variance & standard deviation (incl. origin/scale change)", 0.6, 3,
           "σ² = Σx²/n − x̄², combined variance of two groups, effect of adding/multiplying constants, correcting wrong observation.",
           "Moments, skewness, kurtosis.", "Variance of first n natural numbers = (n²−1)/12."],
+        ["Moments (about mean & origin)", 0.3, 1,
+          "rth moment about origin and about mean, μ₁ = 0, μ₂ = variance, converting raw moments to central moments (up to 3rd), simple calculation from data.",
+          "Skewness/kurtosis coefficients in depth, moment generating functions.",
+          "μ₂ = μ₂' − (μ₁')²."],
         ["Coefficient of variation", 0.2, 1,
           "CV = σ/x̄ × 100, comparing consistency.",
           "", "Lower CV = more consistent."],
-      ]},
-    ],
-  },
-  {
-    id: "M12", subject: "M", name: "Complex Numbers",
-    ncert: "NCERT 11 Ch 4 (Complex Numbers)",
-    obj: "RD Sharma Objective: Complex Numbers; Cube Roots of Unity",
-    prereq: ["Quadratic equations (M02)", "Trig identities (M07)"],
-    speed: [
-      "iⁿ: n mod 4 dekho. ω: 1+ω+ω² = 0, ω³ = 1.",
-      "|z₁z₂| = |z₁||z₂|, arg(z₁z₂) = arg z₁ + arg z₂ — polar form me multiply/divide fast.",
-    ],
-    topics: [
-      { name: "Complex Numbers", leaves: [
-        ["Algebra, modulus & argument", 0.6, 2,
-          "Operations, conjugate, modulus properties, principal argument by quadrant, square root of complex number.",
-          "", "√(a+ib): (x+iy)² = a+ib compare karo."],
-        ["Polar & Euler form, De Moivre (basic)", 0.3, 2,
-          "r(cosθ + i sinθ), re^(iθ), powers using De Moivre.",
-          "nth roots general theory deep.", ""],
-        ["Cube roots of unity", 0.4, 2,
-          "ω, ω², 1+ω+ω² = 0, factorisations like a³+b³ = (a+b)(a+bω)(a+bω²).",
-          "nth roots of unity sums deep.", "ωⁿ: n mod 3."],
-        ["Locus in complex plane (basic)", 0.2, 2,
-          "|z−a| = r circle, |z−a| = |z−b| perpendicular bisector.",
-          "Rotation theorem deep problems.", ""],
       ]},
     ],
   },
@@ -682,7 +607,7 @@ const CHAPTERS = [
   /* ===================== ANALYTICAL ABILITY & REASONING ===================== */
   {
     id: "R01", subject: "R", name: "Series, Analogy & Classification",
-    ncert: "", obj: "R.S. Aggarwal VR: Series Completion; Analogy; Classification",
+    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
     prereq: ["Squares 1–30, cubes 1–15, primes till 100", "Alphabet positions A=1…Z=26 and reverse (EJOTY: 5,10,15,20,25)"],
     speed: [
       "Series me order: difference → difference of difference → ratio → squares/cubes ± → alternate series.",
@@ -709,7 +634,7 @@ const CHAPTERS = [
   },
   {
     id: "R02", subject: "R", name: "Coding, Blood Relations, Direction & Ranking",
-    ncert: "", obj: "R.S. Aggarwal VR: Coding-Decoding; Blood Relations; Direction Sense; Logical Sequence/Ranking",
+    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
     prereq: ["Alphabet positions & opposite letters (A↔Z, B↔Y …)", "Pythagoras triplets (3-4-5, 5-12-13, 6-8-10)"],
     speed: [
       "Blood relation: family tree symbols (□ male, ○ female, = couple, | child) — kabhi dimaag me mat socho, likho.",
@@ -741,7 +666,7 @@ const CHAPTERS = [
   },
   {
     id: "R03", subject: "R", name: "Seating Arrangement & Puzzles",
-    ncert: "", obj: "R.S. Aggarwal VR: Puzzle Test; Seating Arrangement + PYQ puzzles",
+    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
     prereq: ["Coding/ranking basics (R02)"],
     speed: [
       "Pehle definite info fix karo, fir 'possibilities' me 2 case banao — 3+ cases rarely needed.",
@@ -760,7 +685,11 @@ const CHAPTERS = [
         ["Floor/box, scheduling & attribute puzzles", 1.8, 3,
           "Grid puzzles with 2–3 attributes, day/month scheduling, floor-based puzzles.",
           "Very long bank-PO style 5-attribute puzzles (practise a few only).", ""],
-        ["Mathematical operations & symbol substitution", 0.7, 1,
+        ["Input–output (machine input / rearrangement)", 1.2, 2,
+          "Step-wise rearrangement of words/numbers, find step N, find input from output, number of steps.",
+          "Very long 8+ element bank-PO machines (practise a few only).",
+          "Pehle 2 steps me rule pakdo: kaun sa element kis order me aage aata hai."],
+        ["Mathematical operations & symbol substitution", 0.5, 1,
           "Symbol replacement (BODMAS), inequality symbols (>, ≥ coded).",
           "", ""],
       ]},
@@ -768,7 +697,7 @@ const CHAPTERS = [
   },
   {
     id: "R04", subject: "R", name: "Logical & Critical Reasoning",
-    ncert: "", obj: "R.S. Aggarwal VR: Syllogism; Statement–Conclusions/Assumptions/Course of Action; Data Sufficiency; Logical Venn Diagrams",
+    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
     prereq: ["Basic set/Venn understanding (M01)"],
     speed: [
       "Syllogism: Venn diagrams only — 'possibility' cases alag se.",
@@ -779,7 +708,7 @@ const CHAPTERS = [
         ["Syllogism", 1.0, 2,
           "All/Some/No statements, definite vs possible conclusions, Venn method.",
           "", ""],
-        ["Statements: conclusions, assumptions & course of action", 1.5, 2,
+        ["Statements: conclusions, assumptions & arguments", 1.5, 2,
           "Implicit assumptions, strong/weak arguments, cause–effect.",
           "", "Extreme words (only, always) wale options aksar galat."],
         ["Critical reasoning (strengthen/weaken, inference)", 1.0, 2,
@@ -797,8 +726,8 @@ const CHAPTERS = [
     ],
   },
   {
-    id: "R05", subject: "R", name: "Clocks, Calendars, Cubes & Visual Reasoning",
-    ncert: "", obj: "R.S. Aggarwal VR: Clocks; Calendar; Cube & Dice; Non-Verbal (Mirror/Water Image, Series, Counting Figures, Paper Folding)",
+    id: "R05", subject: "R", name: "Non-verbal Reasoning, Clocks & Calendars",
+    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
     prereq: ["Remainders by 7", "Angle basics"],
     speed: [
       "Clock angle = |30H − 5.5M|.",
@@ -807,10 +736,10 @@ const CHAPTERS = [
     ],
     topics: [
       { name: "Clocks & Calendars", leaves: [
-        ["Clocks (angle, coincidence, gain/loss)", 0.8, 2,
+        ["Clocks (angle, coincidence, gain/loss)", 0.5, 2,
           "Angle between hands, hands coincide/opposite/right angle count, faulty clocks.",
           "", "Hands coincide every 65 5/11 min."],
-        ["Calendars (day of week, odd days)", 0.7, 2,
+        ["Calendars (day of week, odd days)", 0.5, 2,
           "Day on a given date, repeating calendars, leap year rules.",
           "", ""],
       ]},
@@ -828,8 +757,8 @@ const CHAPTERS = [
     ],
   },
   {
-    id: "R06", subject: "R", name: "Quantitative Aptitude",
-    ncert: "", obj: "R.S. Aggarwal Quantitative Aptitude: respective chapters",
+    id: "R06", subject: "R", name: "Numerical Reasoning (Quantitative Aptitude)",
+    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
     prereq: ["Percent ↔ fraction table (1/2 … 1/20)", "Tables till 25", "Squares till 30"],
     speed: [
       "Percent-fraction table ka use (12.5% = 1/8, 16.66% = 1/6) — calculation 3x fast.",
@@ -866,8 +795,8 @@ const CHAPTERS = [
     ],
   },
   {
-    id: "R07", subject: "R", name: "Data Interpretation",
-    ncert: "", obj: "R.S. Aggarwal QA: Data Interpretation (tables, bar, pie, line)",
+    id: "R07", subject: "R", name: "Data Interpretation & Visualization",
+    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
     prereq: ["Percentages (R06)", "Approximation & fast division"],
     speed: [
       "Approximation: options door-door hon to calculate exact mat karo.",
@@ -875,8 +804,8 @@ const CHAPTERS = [
     ],
     topics: [
       { name: "DI", leaves: [
-        ["Tables, bar, pie & line graphs", 2.0, 2,
-          "Percentage change, ratio, average from charts, mixed charts.",
+        ["Tables, bar, pie, line graphs & data visualization", 2.5, 2,
+          "Percentage change, ratio, average from charts, mixed charts, reading/choosing the right chart, trends in visual data.",
           "Caselets of 10+ variables.", ""],
       ]},
     ],
@@ -885,7 +814,7 @@ const CHAPTERS = [
   /* ============================ COMPUTER AWARENESS ============================ */
   {
     id: "C01", subject: "C", name: "Number Systems & Data Representation",
-    ncert: "", obj: "Claude notes + Morris Mano Digital Design Ch 1",
+    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
     prereq: ["Powers of 2 till 2¹⁶", "Nibble table 0000–1111 ↔ 0–F"],
     speed: [
       "Binary ↔ Hex: 4-bit groups; Binary ↔ Octal: 3-bit groups — decimal se hoke mat jao.",
@@ -899,9 +828,9 @@ const CHAPTERS = [
         ["Fractional number conversions", 0.8, 2,
           "Decimal fraction → binary (×2 method), binary fraction → decimal, hex fractions.",
           "", ""],
-        ["Character codes: ASCII, BCD, Gray, Excess-3", 1.2, 2,
-          "ASCII values (A=65, a=97, 0=48), BCD encoding, binary ↔ Gray, Excess-3.",
-          "EBCDIC tables, Unicode internals.", "Gray: MSB same, fir XOR of adjacent bits."],
+        ["Representation of characters: ASCII, Unicode, BCD", 1.0, 1,
+          "ASCII values (A=65, a=97, 0=48), 7/8-bit ASCII, Unicode/UTF-8 basics (why needed), BCD encoding.",
+          "Gray/Excess-3 codes, EBCDIC tables, Unicode internals (not in revised syllabus).", "a − A = 32 (lowercase = uppercase + 32)."],
       ]},
       { name: "Signed Numbers & Binary Arithmetic", leaves: [
         ["Binary addition, subtraction, multiplication & division", 1.2, 1,
@@ -922,8 +851,8 @@ const CHAPTERS = [
     ],
   },
   {
-    id: "C02", subject: "C", name: "Boolean Algebra & Logic Gates",
-    ncert: "", obj: "Claude notes + Morris Mano Digital Design Ch 2–4 (selected)",
+    id: "C02", subject: "C", name: "Boolean Algebra",
+    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
     prereq: ["Truth tables", "Set theory Venn (M01)"],
     speed: [
       "Simplify ke liye K-map > algebra (3–4 variables).",
@@ -937,26 +866,20 @@ const CHAPTERS = [
         ["SOP/POS, minterms & maxterms", 0.8, 2,
           "Canonical forms, Σm and ΠM notation, conversion.",
           "", ""],
-        ["Karnaugh map (up to 4 variables)", 1.0, 2,
+        ["Karnaugh map (up to 4 variables)", 0.5, 1,
           "Grouping rules, don't-care conditions, minimal SOP.",
           "5–6 variable K-maps, Quine–McCluskey.", ""],
       ]},
-      { name: "Logic Circuits", leaves: [
-        ["Logic gates & universal gates", 1.2, 2,
+      { name: "Gates (Boolean functions)", leaves: [
+        ["Logic gates & universal gates", 0.8, 2,
           "AND/OR/NOT/NAND/NOR/XOR/XNOR truth tables, realising gates using only NAND/NOR (gate counts).",
           "CMOS transistor-level design.", "XOR using NAND = 4 gates."],
-        ["Combinational circuits (adder, MUX, decoder)", 0.8, 1,
-          "Half/full adder expressions, MUX/decoder/encoder basics.",
-          "Carry look-ahead design details.", "Full adder Sum = A⊕B⊕C."],
-        ["Flip-flops (basic)", 0.4, 1,
-          "SR, JK, D, T characteristics.",
-          "Sequential circuit design, state machines.", ""],
       ]},
     ],
   },
   {
-    id: "C03", subject: "C", name: "Computer Organisation & General Awareness",
-    ncert: "", obj: "Claude notes + NIMCET PYQs",
+    id: "C03", subject: "C", name: "Computer Organisation & Hardware",
+    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
     prereq: ["Units: bit, byte, KB = 2¹⁰ B, MB = 2²⁰ B"],
     speed: ["Abbreviations & facts ka flashcard deck — roz 5 min."],
     topics: [
@@ -967,14 +890,36 @@ const CHAPTERS = [
         ["Memory hierarchy & memory units", 1.2, 2,
           "Registers > cache > RAM > disk, RAM/ROM types, address lines vs memory size (2ⁿ), cache hit ratio basic.",
           "Cache mapping numericals deep.", "n address lines ⇒ 2ⁿ locations."],
-        ["I/O devices & backup storage", 0.5, 1,
-          "Input/output devices, storage devices (HDD, SSD, optical, tape).",
+        ["Input, output, storage & backup devices", 1.2, 1,
+          "Input (keyboard, mouse, scanner, mic, touch, OCR/MICR/OMR), output (monitor, printer types, speakers, plotter), storage (HDD, SSD, USB drive, optical, tape) & backup devices; capacity/speed comparisons.",
           "", ""],
       ]},
-      { name: "General", leaves: [
-        ["OS, software, networking & abbreviations", 0.8, 1,
-          "System vs application software, OS functions, compiler/interpreter/assembler, basic networking terms, common abbreviations.",
-          "Deep OS/networking theory.", ""],
+    ],
+  },
+  {
+    id: "C04", subject: "C", name: "Software, Internet & Email",
+    ncert: "", obj: "Lecture + NIMCET PYQs + test series topic tests",
+    prereq: ["Basic computer use"],
+    speed: ["Facts-type questions: flashcards (OS names, ports/protocols, malware types) — roz 5 min."],
+    topics: [
+      { name: "Computer Software", leaves: [
+        ["Operating systems (Windows, macOS, Linux, Android)", 0.8, 1,
+          "Functions of an OS (process, memory, file, device management), types (batch, multi-tasking, real-time, mobile), examples and their makers, GUI vs CLI, file systems basics.",
+          "OS internals: scheduling algorithms, paging numericals.", ""],
+        ["System software (utilities, device drivers) & application software", 0.8, 1,
+          "System vs application software, utilities (antivirus, disk cleanup, compression, backup), device drivers, compiler/interpreter/assembler/linker/loader, open-source vs proprietary, common application tools.",
+          "Compiler design internals.", "Driver = OS aur hardware ke beech translator."],
+      ]},
+      { name: "Internet & Email", leaves: [
+        ["How the internet works & web browsing", 0.8, 1,
+          "IP address, DNS, URL parts, HTTP vs HTTPS, web browser, search engine, cookies, cache, ISP, LAN/MAN/WAN, client–server basics.",
+          "TCP/IP stack internals, subnetting numericals.", "HTTPS = HTTP + TLS (port 443); HTTP port 80."],
+        ["Email: sending, receiving & managing", 0.5, 1,
+          "SMTP (send) vs POP3/IMAP (receive), To/CC/BCC, attachments, reply/forward, spam & filters, folders, email address parts.",
+          "Mail server configuration.", "BCC wale ko baaki recipients nahi dikhte."],
+        ["Online security basics", 0.9, 1,
+          "Malware (virus, worm, trojan, ransomware, spyware), phishing, spoofing, firewall, antivirus, strong passwords, 2FA, HTTPS padlock, encryption basics, safe browsing & backups.",
+          "Cryptography algorithms in depth.", ""],
       ]},
     ],
   },
@@ -982,12 +927,12 @@ const CHAPTERS = [
   /* ============================ GENERAL ENGLISH ============================ */
   {
     id: "E01", subject: "E", name: "Reading Comprehension",
-    ncert: "", obj: "NIMCET PYQ passages + any editorial daily",
+    ncert: "", obj: "NIMCET PYQs + test series topic tests (+ daily editorial)",
     prereq: ["Daily 1 editorial (10 min)"],
     speed: ["Pehle questions padho, fir passage — answer locate karo."],
     topics: [
       { name: "RC", leaves: [
-        ["Reading comprehension", 2.5, 2,
+        ["Reading comprehension", 2.2, 2,
           "Main idea, inference, vocab-in-context, tone.",
           "", ""],
       ]},
@@ -995,27 +940,30 @@ const CHAPTERS = [
   },
   {
     id: "E02", subject: "E", name: "Vocabulary",
-    ncert: "", obj: "Word Power Made Easy + PYQ word lists",
+    ncert: "", obj: "NIMCET PYQs + test series topic tests",
     prereq: ["Roots: bene, mal, chron, graph, anti, ante …"],
     speed: ["Root words se unknown words guess — 1 root = 10 words."],
     topics: [
       { name: "Word Power", leaves: [
-        ["Synonyms", 1.5, 2, "High-frequency exam words, roots.", "Rare GRE-only words.", ""],
-        ["Antonyms", 1.5, 2, "High-frequency exam words, prefixes (un-, dis-, in-).", "", ""],
-        ["Idioms & phrases, one-word substitution", 1.5, 1, "Common idioms, one-word substitutes list.", "", ""],
+        ["Synonyms", 1.2, 2, "High-frequency exam words, roots.", "Rare GRE-only words.", ""],
+        ["Antonyms", 1.2, 2, "High-frequency exam words, prefixes (un-, dis-, in-).", "", ""],
+        ["Meaning of words & phrases (idioms, one-word substitution)", 1.3, 1, "Common idioms & phrases, one-word substitutes, words in context.", "", ""],
+        ["Word formation (prefixes, suffixes, roots)", 0.7, 1, "Common roots (bene, mal, chron, graph…), prefixes/suffixes changing meaning or part of speech (-tion, -ive, un-, dis-).", "Etymology deep dive.", "1 root = 10 words."],
       ]},
     ],
   },
   {
     id: "E03", subject: "E", name: "Grammar & Usage",
-    ncert: "", obj: "Wren & Martin (articles, prepositions, tenses, SVA chapters)",
+    ncert: "", obj: "NIMCET PYQs + test series topic tests",
     prereq: [],
     speed: ["Error spotting: subject–verb agreement pehle check karo, fir tense, fir preposition."],
     topics: [
       { name: "Grammar", leaves: [
-        ["Articles & prepositions", 1.2, 1, "a/an/the rules, common preposition usages.", "", ""],
+        ["Sentence forms (active/passive, direct/indirect, sentence types)", 0.7, 2, "Voice change, narration change, simple/compound/complex sentences, transformation of sentences.", "", ""],
+        ["Articles & prepositions", 0.9, 1, "a/an/the rules, common preposition usages.", "", ""],
         ["Verbs, tenses & subject–verb agreement", 0.8, 2, "Tense consistency, SVA rules with each/either/neither.", "", ""],
-        ["Error spotting, sentence improvement & fill in the blanks", 1.0, 2, "Common error types; technical writing basics.", "", ""],
+        ["Error spotting, sentence improvement & fill in the blanks", 0.8, 2, "Common error types, accuracy & fluency of expression.", "", ""],
+        ["Technical writing", 0.4, 1, "Clarity, conciseness, formal tone, ordering sentences in a paragraph, choosing precise words.", "Report formats in depth.", ""],
       ]},
     ],
   },

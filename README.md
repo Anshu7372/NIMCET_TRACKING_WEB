@@ -12,7 +12,7 @@ It is a static web app with no build step and no backend. Open `index.html`, or 
 |---|---|
 | **Today** | Today's plan in 4 pomodoros. Each task names the book, the subtopic, the exact question range and the think-time rule. Ticking a task updates progress, question counts and the revision schedule. |
 | **Plan** | Phase dates, daily/weekly templates, a month-by-month roadmap and a day-by-day schedule. The schedule is recalculated from your *actual* progress, so a missed day shifts the plan automatically. |
-| **Syllabus** | 179 subtopics in the order Subject → Chapter → Topic → Subtopic. Each has a depth level (D1/D2/D3), NEED/SKIP lists, estimated weightage, question targets (NCERT / RD Sharma Objective / PYQ), tricks, prerequisites, notes, confidence and a ★ tough flag. |
+| **Syllabus** | Revised NIMCET syllabus (w.e.f. 2026), 169 subtopics in the order Subject → Chapter → Topic → Subtopic. Each has a depth level (D1/D2/D3), NEED/SKIP lists, estimated weightage, question targets (NCERT exercise / JEE Main PYQ / NIMCET PYQ, or test-series topic tests for non-maths), tricks, prerequisites, notes, confidence and a ★ tough flag. |
 | **Revision** | Spaced revision (1-3-7-15-30-60-90 days; tough topics 1-2-4-7-12-20-30-45), Again/Hard/Good/Easy rating, the revision-pomodoro method, and all revision types. |
 | **Tough & Mistakes** | ★ tough topics come up in revision more often. The mistake log re-surfaces each mistake at 1-3-7-21 days until you solve it 4 times. Analytics show where your mistakes happen. |
 | **Practice Questions** | GATE-tracker style quiz on your own uploaded questions: filter by subject/chapter/subtopic, timer, A–D options (keys 1–4 + Enter), auto-check, "possible galti" diagnosis, reason buttons, and a Claude prompt. Wrong answers go to the mistake log automatically and come back for re-solve after 1-3-7-21 days; 3 wrong in one subtopic marks it ★ tough. |
@@ -25,11 +25,13 @@ It is a static web app with no build step and no backend. Open `index.html`, or 
 
 - **Mon–Sat:**
   - P1: speed drill + spaced revision
-  - P2–P3: new Maths (concept → NCERT → RD Sharma Objective → PYQ)
+  - P2–P3: new Maths (NCERT lecture → NCERT exercise → JEE Main PYQs → NIMCET PYQs)
   - P4: Reasoning (Mon/Wed/Fri) · Computer (Tue/Thu) · English (Sat)
   - 5-minute recap
 - **Sunday:** weekly revision. On the last Sunday of the month: a monthly test.
-- **Phase 1:** full syllabus plus topic-wise PYQs (~424 h, ~8000 questions).
+- **Phase 1:** full syllabus plus topic-wise PYQs (~410 h, ~7500 questions).
+
+Resources used: NCERT lectures + exercises, JEE Main PYQs, NIMCET PYQs and a test series (topic tests + full mocks). No other books.
 - **Phase 2:** 6 reserved PYQ papers (2020–2025), each as a paper day followed by an analysis day.
 - **Phase 3:** 30 full mocks, each as a mock day, then analysis + fix, then a revision day.
 - **Phase 4:** maintenance until the exam. The last 14 days are final revision.
